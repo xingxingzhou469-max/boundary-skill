@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+
+# Local tooling / planning state
+.omo/
+.codegraph
+
+# Local Boundary data (user-chosen root, never committed)
+_system/
+Cards/
+Reports/

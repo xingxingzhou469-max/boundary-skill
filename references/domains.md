@@ -62,4 +62,4 @@ Include politics, religion, ethics, and social controversy as knowledge domains,
 
 ## Duplicate control
 
-Treat a topic as repeated when it has the same central explanatory payload, even if the title differs. A new angle is allowed only if it materially deepens or reframes an older card. Consult recent titles, domains, feedback, and note links from `state.py context` before selecting.
+Treat a topic as repeated when it has the same central explanatory payload, even if the title differs. A new angle is allowed only if it materially deepens or reframes an older card. Consult the stored central questions, summaries, topic keys, regions, domains, and feedback from `state.py context` before selecting. Reuse a stable topic key for the same payload. The script rejects exact and close textual repeats and applies a seven-day cooldown after `skipped`; the agent remains responsible for rejecting semantic paraphrases that lexical comparison cannot detect.

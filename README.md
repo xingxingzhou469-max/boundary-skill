@@ -80,7 +80,8 @@ flowchart LR
     B --> C["比较三个候选主题"]
     C --> D["打开并核验来源"]
     D --> E["生成 3～5 分钟知识卡"]
-    E --> F{"你的反馈"}
+    E --> P["保存完整待确认卡片"]
+    P --> F{"你的反馈"}
     F -->|"已知道 / 新知识"| G["保存到 Obsidian"]
     F -->|"深入了解"| H["生成研究简报"]
     F -->|"暂时跳过"| I["短期降低频率"]
@@ -107,13 +108,19 @@ flowchart LR
 
 ## 三层阅读深度
 
-Boundary 不会一开始就扔给你几十页报告。
+Boundary 不会一开始就扔给你几十页报告，也不会让 Agent 自行猜测应该深入到哪一层。层级完全由你的操作决定。
 
 | 层级 | 触发方式 | 输出 |
 |---|---|---|
 | **知识卡** | 默认 | 3～5 分钟直接阅读，至少两个独立来源 |
-| **研究简报** | 回复“深入了解” | 5～10 分钟，包含证据、争议、限制和跨领域连接 |
-| **完整报告** | 明确要求完整研究 | 系统研究、就近引用、反方证据、完整参考文献和方法说明 |
+| **研究简报** | 回复“深入了解” | 围绕一个核心问题，给出直接答案、关键证据、争议、不确定性和跨领域连接 |
+| **完整报告** | 明确要求完整研究 | 围绕一个明确的研究问题生成经过逐页检查、排版美观的 PDF |
+
+“深入了解”永远生成研究简报，不会被自动升级为完整报告。每份简报都必须满足八项要求：开头提出一个核心问题；先给直接答案；解释最强证据及其可信原因；使用至少三个可靠且独立的来源；在重要事实旁放链接；说明争议或不确定性；只保留回答问题所需的背景；最后说明它如何改变、限定或扩展原知识卡。
+
+研究简报结尾只提供“够了 / 继续完整研究”。只有你明确选择继续或直接要求完整报告后，Boundary 才会进入完整报告；开始前必须有一个明确的研究问题，不能只把知识卡标题扩写成长文。
+
+完整报告只以 PDF 作为最终交付格式，保存在 `Reports/`。PDF 使用清晰的字体层级、统一留白、克制配色、页码、可读引用和完整参考文献；表格、图表与图片必须清晰对齐。交付前会把每一页渲染成图片进行检查，修正裁切、重叠、乱码、断裂表格和不自然分页。无法生成或检查 PDF 时，不会用其他格式代替。
 
 ## 可靠性不是装饰
 
@@ -136,12 +143,16 @@ Boundary/
 ├── Cards/
 │   └── 每个主题一张独立笔记
 ├── Reports/
-│   └── 深入研究报告
+│   ├── 研究简报.md
+│   └── 完整研究报告.pdf
 └── _system/
+    ├── pending/
+    │   └── 尚未反馈的完整卡片
+    ├── tmp/
     └── state.json
 ```
 
-被接受的卡片会保留正文引用、来源、反馈和 `[[双向链接]]`。选择“暂时跳过”的内容不会污染正式笔记，只会在透明的本地状态中短期避让。
+每张已经展示的卡片会先完整保存在 `pending/`，因此关闭当前对话后仍然可以继续反馈。被接受的卡片会自动转为正式笔记、更新知识地图，并保留正文引用、结构化来源、反馈和 `[[双向链接]]`。选择“暂时跳过”的内容不会污染正式笔记，只会在透明的本地状态中短期避让。
 
 所有数据都保存在用户选择的本地目录，不会上传到 Boundary 服务——因为不存在 Boundary 服务。
 
@@ -172,6 +183,8 @@ Today's boundary, in English
 
 首次运行只会询问输出语言、选题模式和 Obsidian 保存位置，不会要求填写兴趣问卷。
 
+完整报告使用 ReportLab 生成，并通过 Poppler 逐页渲染。只有明确请求完整报告时才需要 `requirements-pdf.txt` 中的 Python 依赖和 `pdftoppm`；Boundary 会先检查这些能力，缺失时停止并说明，不会输出未经检查的替代格式。
+
 ### 每日自动送达
 
 Boundary 负责选题、查证、生成和记录；定时由你正在使用的 Agent 或自动任务系统负责。完成首次配置后，可以直接告诉支持自动任务的 Agent：
@@ -188,7 +201,13 @@ Boundary 负责选题、查证、生成和记录；定时由你正在使用的 A
 boundary-skill/
 ├── SKILL.md
 ├── agents/openai.yaml
-├── scripts/state.py
+├── requirements-pdf.txt
+├── scripts/
+│   ├── state.py
+│   └── report.py
+├── tests/
+│   ├── test_state_cli.py
+│   └── test_report_cli.py
 └── references/
     ├── domains.md
     ├── obsidian.md
@@ -196,7 +215,7 @@ boundary-skill/
     └── source-policy.md
 ```
 
-状态脚本只使用 Python 标准库，负责配置、随机领域选择、历史记录、反馈和重复检查。内容研究由安装该 Skill 的 Agent 使用其可用搜索工具完成。
+状态脚本只使用 Python 标准库，负责完整卡片暂存、近期领域与地区覆盖、结构化来源校验、重复与跳过冷却、反馈、Obsidian 笔记和知识地图。报告脚本负责生成 PDF、逐页渲染、哈希校验和视觉确认门槛。内容研究仍由安装该 Skill 的 Agent 使用其可用搜索工具完成。
 
 ## 设计来源
 
@@ -228,6 +247,22 @@ Boundary selects one topic, verifies it against reliable sources, and turns it i
 
 Both modes reject unsupported trivia, semantic repeats, and topics that cannot be verified with at least two independent sources.
 
+### Three depth levels
+
+The user's action, not the model's judgment, determines the level:
+
+| Level | Trigger | Output |
+|---|---|---|
+| **Knowledge card** | Default | A direct introduction to what the topic is and why it matters |
+| **Research brief** | Choose `Deep dive` | One central question, a direct answer, the strongest evidence, uncertainty, and what the deeper evidence changes |
+| **Full report** | Explicitly request a complete/full report | A polished, visually validated PDF built around a specific research question |
+
+`Deep dive` always produces a research brief, never a full report. Every brief must state one question, answer it directly, explain the strongest evidence, use at least three strong independent sources, cite important claims in place, state uncertainty, exclude unnecessary background, and explain how it changes or extends the original card.
+
+A brief ends with `Enough / Continue to full report`. Boundary generates a full report only after the user explicitly continues or otherwise requests one. A specific research question must be established first; a card title alone is not enough.
+
+The final full report is delivered only as a PDF and saved under `Reports/`. It uses a clear typographic hierarchy, consistent spacing, restrained color, page numbers, readable citations, and a complete bibliography. Every page is rendered and visually inspected before delivery; clipping, overlaps, missing glyphs, broken tables, and awkward page breaks must be corrected. Boundary does not substitute another final format when PDF generation or visual validation is unavailable.
+
 ### What makes it different
 
 - Covers 12 broad domains rather than one news or technology feed.
@@ -237,6 +272,9 @@ Both modes reject unsupported trivia, semantic repeats, and topics that cannot b
 - Supports Chinese and English with the same evidence standard.
 - Saves accepted cards, reports, citations, and meaningful wikilinks to Obsidian.
 - Keeps all history in transparent local files.
+- Persists the complete shown card before delivery, so feedback still works after the original chat closes.
+- Validates structured sources, recent domain and region coverage, duplicate payloads, and skip cooldowns.
+- Generates full reports as PDFs that cannot be attached until every rendered page is visually approved.
 
 ### Install
 

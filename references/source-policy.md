@@ -13,6 +13,8 @@
 9. State uncertainty and disagreement in plain language.
 10. Record access/publication dates for facts likely to change.
 
+For every retained source, record its original title, URL, source kind, publisher or institution, and the specific claim it supports. `publisher` identifies the independent organization responsible for the source; do not invent different publisher labels for material derived from the same underlying organization.
+
 ## Source hierarchy
 
 Prefer, in order appropriate to the subject:
@@ -64,6 +66,7 @@ Wikipedia may help discover terminology and sources but should not be one of the
 ## Research brief and full report quality
 
 - Support each central conclusion with citations at the point of use.
-- Use at least three strong sources for a small research brief and broader coverage for a full report.
+- Use at least three strong, genuinely independent sources for a small research brief.
+- For a full report, choose sources according to the coverage required by its specific research question rather than meeting a fixed source count.
 - Include evidence strength, counter-evidence, limitations, and unanswered questions.
 - End with complete, usable references; no placeholders.
