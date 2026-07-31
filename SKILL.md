@@ -1,6 +1,6 @@
 ---
 name: boundary
-description: Expand a user's knowledge boundary with a verified daily knowledge card selected either for high-value cross-domain discovery or genuine random wandering. Use when the user asks for today's boundary, a daily fact, something worth knowing outside their field, a random unfamiliar topic, help escaping an information bubble, or a deeper brief/report about a Boundary card. Also use when the user replies to an active Boundary card with 已知道, 新知识, 深入了解, 暂时跳过, known, new, deep dive, or skip.
+description: Expand a user's knowledge boundary with a verified daily knowledge card selected either for high-value cross-domain discovery or genuine random wandering. Use when the user asks for today's boundary, a daily fact, something worth knowing outside their field, a random unfamiliar topic, help escaping an information bubble, or a deep-dive report about a Boundary card. Also use when the user replies to an active Boundary card with 已知道, 新知识, 深入了解, 暂时跳过, known, new, deep dive, or skip.
 ---
 
 # Boundary
@@ -12,8 +12,7 @@ Deliver one verified, worthwhile encounter with the wider world. Optimize for du
 - Read [references/domains.md](references/domains.md) before selecting a topic.
 - Read [references/source-policy.md](references/source-policy.md) before researching or citing.
 - Read [references/output-formats.md](references/output-formats.md) before drafting a card or report.
-- Read [references/obsidian.md](references/obsidian.md) when configuring storage, saving notes, or updating the map.
-- Before creating a full research report, load and follow an available PDF creation skill. The final full report must be a visually validated PDF.
+- Read [references/storage.md](references/storage.md) when configuring the save folder or writing notes.
 
 ## First run
 
@@ -21,8 +20,7 @@ If Boundary is not configured, ask for only these operational choices in one com
 
 1. Output language: Chinese or English. Default to the user's current language.
 2. Selection mode: `boundary`, `wander`, or `alternate`.
-3. Obsidian storage: a `Boundary` folder inside an existing vault, or a new independent vault.
-4. The chosen absolute vault/folder path.
+3. The absolute folder where Boundary should save its files. Any folder works; all files are plain Markdown and JSON readable on any device.
 
 Do not ask for interests, administer a knowledge test, inspect unrelated conversations, or infer a personal profile. Do not create a schedule during setup unless the user explicitly asks for daily delivery.
 
@@ -32,8 +30,7 @@ Resolve this skill's directory as `SKILL_DIR`, then initialize local state:
 python3 "$SKILL_DIR/scripts/state.py" init \
   --root "/absolute/path/chosen/by/user" \
   --language zh \
-  --mode boundary \
-  --storage existing
+  --mode boundary
 ```
 
 Use `--config` when the runtime or user requires a non-default config path. Never overwrite an existing configuration without confirmation.
@@ -100,67 +97,35 @@ python3 "$SKILL_DIR/scripts/state.py" feedback --id "..." --value new
 
 Map responses as follows:
 
-- `known`: finalize the pending card under `Cards/` and update the knowledge map.
-- `new`: finalize the pending card, update the map, and count the shown domain and regions as coverage.
-- `deep`: finalize the pending card and map, then produce exactly one small research brief. Never interpret `deep`/`深入了解` as a request for a full report.
+- `known`: finalize the pending card under `Cards/` and append it to the index.
+- `new`: finalize the pending card, append it to the index, and count the shown domain and regions as coverage.
+- `deep`: finalize the pending card and index, then produce exactly one deep research report (see "Deep dive" below). Never interpret `deep`/`深入了解` as anything less than the full in-depth report.
 - `skipped`: delete the pending body, create no formal note, and retain only transparent metadata for the seven-day topic cooldown and domain weighting.
 
-`feedback` performs the card and knowledge-map writes. Do not recreate those files manually. Feedback is final for that shown card.
+`feedback` performs the card and index writes. Do not recreate those files manually. Feedback is final for that shown card.
 
-## Deepen in stages
+## Deep dive
 
-Use three levels. The user's action, not the model's judgment, determines the level:
+`Deep dive`/`深入了解` is the single deepening path, and it goes all the way down. It produces one complete, in-depth research report — there is no intermediate brief and no further "choose your depth" step afterward.
 
-1. Daily card: explain what the topic is and why it matters.
-2. Small research brief: always use this level after `deep`/`深入了解`. Formulate one central question from the card, answer it directly, and satisfy every brief quality requirement in `output-formats.md`. After fresh research, save the exact brief Markdown and its structured sources, then attach it:
+1. Formulate one central research question from the card. If the user's question is already clear, use it; otherwise ask the user to define it before researching. Never expand a card title into a report without a research question.
+2. Research fresh for this level, following `source-policy.md`. At least three strong, independent sources are required; use more when the question demands it. Save the exact report Markdown and its structured sources to temporary files.
+3. Write the report using the deep research report format in `output-formats.md`. It must be comprehensive in depth but written in plain, accessible language — like a long-form explainer for a curious reader, not a journal article. It must be readable on its own, without the card.
+4. Attach it:
 
    ```bash
-   python3 "$SKILL_DIR/scripts/state.py" brief \
+   python3 "$SKILL_DIR/scripts/state.py" deep \
      --id "..." \
      --question "..." \
-     --body "<boundary-root>/_system/tmp/brief.md" \
-     --sources "<boundary-root>/_system/tmp/brief-sources.json"
+     --body "<boundary-root>/_system/tmp/deep-report.md" \
+     --sources "<boundary-root>/_system/tmp/deep-report-sources.json"
    ```
 
-   This creates `Reports/<slug>-research-brief.md` and links it back to the card. Remove the temporary input files after success.
+   This creates `Reports/<slug>-deep-research.md` and links it back to the card. Remove the temporary input files after success.
 
-3. Full research report: use only after the user explicitly requests a complete/full report. A full report requires a specific research question; use the user's question when it is already clear, otherwise ask the user to define it before researching. Never expand a card title into a full report without a research question. Deliver the completed report as a polished PDF, not as raw Markdown.
-
-End every small research brief with two choices in the output language: `Enough` and `Continue to full report`. The second choice is an invitation, not permission to generate the report until the user selects it or otherwise explicitly requests a full report.
+5. End the report with two choices in the output language: `Known` and `Enough`. A deep dive never spawns an automatic follow-up.
 
 Each level requires fresh source verification. For academic, medical, financial, legal, and contested subjects, apply the domain-specific rules in `source-policy.md`. Never provide personal diagnosis, individualized legal advice, or direct buy/sell instructions.
-
-For a full report:
-
-1. Load the PDF skill. Verify that ReportLab, pypdf, and `pdftoppm` are available; install `requirements-pdf.txt` when the host permits it.
-2. Research and create the structured report JSON defined in `output-formats.md`.
-3. Build and render the report:
-
-   ```bash
-   python3 "$SKILL_DIR/scripts/report.py" build \
-     --input "<boundary-root>/_system/tmp/report.json" \
-     --output "<boundary-root>/Reports/<filesystem-safe-title>.pdf" \
-     --render-dir "<boundary-root>/_system/tmp/pdf" \
-     --manifest "<boundary-root>/_system/report-validation.json"
-   ```
-
-4. Open and visually inspect every path in `rendered_pages`. Correct the report and rebuild if any page has clipping, overlap, missing glyphs, broken tables, unreadable text, inconsistent spacing, or poor page breaks.
-5. Only after every rendered page passes visual inspection, approve the unchanged PDF:
-
-   ```bash
-   python3 "$SKILL_DIR/scripts/report.py" approve \
-     --manifest "<boundary-root>/_system/report-validation.json"
-   ```
-
-6. Attach the approved PDF to its originating accepted card:
-
-   ```bash
-   python3 "$SKILL_DIR/scripts/state.py" report \
-     --id "..." \
-     --manifest "<boundary-root>/_system/report-validation.json"
-   ```
-
-The final command verifies the PDF hash and visual approval, records its path, links it from the card, and removes rendered temporary pages. Return the PDF to the user. If PDF creation or page-by-page visual validation is unavailable, stop and explain the missing capability; do not substitute another final format.
 
 ## Language behavior
 
@@ -181,5 +146,5 @@ Boundary owns topic selection, research, generation, feedback, history, and note
 - Do not permanently block a knowledge domain.
 - Do not build political, religious, medical, financial, or personality profiles.
 - Do not upload the learning history or require an external storage service.
-- Do not modify `.obsidian` settings or require Obsidian plugins.
+- Do not rely on a specific notes app, plugin, or vault; every saved file is plain Markdown or JSON.
 - Do not fabricate citations, quotations, dates, consensus, or false balance.

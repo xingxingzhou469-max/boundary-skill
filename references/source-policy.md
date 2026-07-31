@@ -30,7 +30,7 @@ Wikipedia may help discover terminology and sources but should not be one of the
 
 - Prefer peer-reviewed papers and field-level reviews.
 - Identify whether evidence is a review, experiment, observational study, model, or scholarly interpretation.
-- Include methods and limitations in research briefs and full reports.
+- Include methods and limitations in deep research reports.
 - Do not imply that one paper establishes consensus.
 - Provide DOI or stable paper links when available.
 
@@ -63,10 +63,9 @@ Wikipedia may help discover terminology and sources but should not be one of the
 - Name major disputes and why the evidence permits more than one reading.
 - For people traditionally called a sole “discoverer,” check collaborators, predecessors, and excluded contributors.
 
-## Research brief and full report quality
+## Deep research report quality
 
 - Support each central conclusion with citations at the point of use.
-- Use at least three strong, genuinely independent sources for a small research brief.
-- For a full report, choose sources according to the coverage required by its specific research question rather than meeting a fixed source count.
+- Use at least three strong, genuinely independent sources for a deep research report; use more when the research question demands broader coverage.
 - Include evidence strength, counter-evidence, limitations, and unanswered questions.
 - End with complete, usable references; no placeholders.

@@ -10,7 +10,6 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 STATE_SCRIPT = PROJECT_ROOT / "scripts" / "state.py"
-REPORT_SCRIPT = PROJECT_ROOT / "scripts" / "report.py"
 
 
 class BoundaryCliTestCase(unittest.TestCase):
@@ -28,8 +27,6 @@ class BoundaryCliTestCase(unittest.TestCase):
             "zh",
             "--mode",
             "boundary",
-            "--storage",
-            "new",
             "--timezone",
             "Asia/Shanghai",
         )
@@ -44,22 +41,6 @@ class BoundaryCliTestCase(unittest.TestCase):
         )
         if expect_ok and result.returncode != 0:
             self.fail(f"CLI failed ({result.returncode}): {result.stderr or result.stdout}")
-        return result
-
-    def run_report_cli(
-        self, *args: str, expect_ok: bool = True
-    ) -> subprocess.CompletedProcess[str]:
-        result = subprocess.run(
-            [sys.executable, str(REPORT_SCRIPT), *args],
-            cwd=PROJECT_ROOT,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        if expect_ok and result.returncode != 0:
-            self.fail(
-                f"Report CLI failed ({result.returncode}): {result.stderr or result.stdout}"
-            )
         return result
 
     def write_card_input(self) -> tuple[Path, Path]:
@@ -135,13 +116,13 @@ class BoundaryCliTestCase(unittest.TestCase):
         self.assertIn("绍纳文化", note.read_text(encoding="utf-8"))
         self.assertFalse(draft.exists())
 
-        map_path = self.root / "知识边界地图.md"
+        index_path = self.root / "INDEX.md"
         self.assertIn(
-            "[[Cards/great-zimbabwe|巨津巴布韦]]",
-            map_path.read_text(encoding="utf-8"),
+            "- [巨津巴布韦](Cards/great-zimbabwe.md)",
+            index_path.read_text(encoding="utf-8"),
         )
 
-    def test_deep_feedback_can_attach_a_linked_research_brief(self) -> None:
+    def test_deep_feedback_can_attach_a_linked_deep_research_report(self) -> None:
         body, sources = self.write_card_input()
         recorded = json.loads(
             self.run_cli(
@@ -168,15 +149,16 @@ class BoundaryCliTestCase(unittest.TestCase):
         )
         self.run_cli("feedback", "--id", recorded["id"], "--value", "deep")
 
-        brief_body = self.temp / "brief.md"
-        brief_body.write_text(
-            "# 巨津巴布韦 — 研究简报\n\n"
+        report_body = self.temp / "deep-report.md"
+        report_body.write_text(
+            "# 巨津巴布韦 — 深度研究报告\n\n"
             "## 核心问题\n谁建造了这座城市，考古证据如何支持这一结论？\n\n"
-            "## 直接结论\n证据指向当地社会，而不是殖民时期假设的外来建造者。\n",
+            "## 直接结论\n证据指向当地社会，而不是殖民时期假设的外来建造者。\n\n"
+            "## 证据详解\n年代学与物质文化相互印证。[来源](https://example.org/a)\n",
             encoding="utf-8",
         )
-        brief_sources = self.temp / "brief-sources.json"
-        brief_sources.write_text(
+        report_sources = self.temp / "deep-report-sources.json"
+        report_sources.write_text(
             json.dumps(
                 [
                     {
@@ -207,26 +189,26 @@ class BoundaryCliTestCase(unittest.TestCase):
 
         attached = json.loads(
             self.run_cli(
-                "brief",
+                "deep",
                 "--id",
                 recorded["id"],
                 "--question",
                 "谁建造了这座城市，考古证据如何支持这一结论？",
                 "--body",
-                str(brief_body),
+                str(report_body),
                 "--sources",
-                str(brief_sources),
+                str(report_sources),
             ).stdout
         )
-        brief_path = self.root / attached["brief"]
+        report_path = self.root / attached["report"]
         card_path = self.root / attached["note"]
-        self.assertTrue(brief_path.is_file())
+        self.assertTrue(report_path.is_file())
         self.assertIn(
-            "[[../Cards/great-zimbabwe|巨津巴布韦]]",
-            brief_path.read_text(encoding="utf-8"),
+            "[巨津巴布韦](../Cards/great-zimbabwe.md)",
+            report_path.read_text(encoding="utf-8"),
         )
         self.assertIn(
-            "[[../Reports/great-zimbabwe-research-brief|研究简报]]",
+            "[深度研究报告](../Reports/great-zimbabwe-deep-research.md)",
             card_path.read_text(encoding="utf-8"),
         )
 
@@ -332,101 +314,6 @@ class BoundaryCliTestCase(unittest.TestCase):
         self.assertNotEqual(0, duplicate.returncode)
         self.assertIn("skip cooldown", duplicate.stderr)
 
-    def test_visually_approved_pdf_can_be_attached_to_the_card(self) -> None:
-        body, sources = self.write_card_input()
-        recorded = json.loads(
-            self.run_cli(
-                "record",
-                "--title",
-                "巨津巴布韦",
-                "--slug",
-                "great-zimbabwe",
-                "--question",
-                "谁建造了巨津巴布韦，证据是什么？",
-                "--summary",
-                "考古证据显示当地绍纳文化相关社群建造了石城并参与印度洋贸易。",
-                "--domain",
-                "history-archaeology",
-                "--region",
-                "Southern Africa",
-                "--mode",
-                "boundary",
-                "--body",
-                str(body),
-                "--sources",
-                str(sources),
-            ).stdout
-        )
-        self.run_cli("feedback", "--id", recorded["id"], "--value", "new")
-
-        report_input = self.temp / "full-report.json"
-        report_input.write_text(
-            json.dumps(
-                {
-                    "title": "巨津巴布韦：证据与解释",
-                    "question": "考古证据如何确认城市的建造者？",
-                    "language": "zh",
-                    "generated_at": "2026-07-28",
-                    "summary": "多类证据共同指向当地绍纳文化相关社群。",
-                    "sections": [
-                        {"heading": "研究范围", "paragraphs": ["区分材料与后世解释。"]},
-                        {"heading": "主要证据", "paragraphs": ["年代与物质文化相互支持。[1]"]},
-                        {"heading": "竞争解释", "paragraphs": ["外来建造假说缺乏证据。[2]"]},
-                        {"heading": "研究限制", "paragraphs": ["部分细节仍待研究。"]},
-                    ],
-                    "references": [
-                        {
-                            "title": "Archaeological record",
-                            "url": "https://example.org/a",
-                            "publisher": "Example Museum",
-                        },
-                        {
-                            "title": "Historical synthesis",
-                            "url": "https://example.net/b",
-                            "publisher": "Example University",
-                        },
-                    ],
-                },
-                ensure_ascii=False,
-            ),
-            encoding="utf-8",
-        )
-        pdf = self.root / "Reports" / "great-zimbabwe-full-report.pdf"
-        render_dir = self.root / "_system" / "tmp" / "pdf"
-        manifest = self.root / "_system" / "report-validation.json"
-        self.run_report_cli(
-            "build",
-            "--input",
-            str(report_input),
-            "--output",
-            str(pdf),
-            "--render-dir",
-            str(render_dir),
-            "--manifest",
-            str(manifest),
-        )
-        self.run_report_cli("approve", "--manifest", str(manifest))
-
-        attached = json.loads(
-            self.run_cli(
-                "report",
-                "--id",
-                recorded["id"],
-                "--manifest",
-                str(manifest),
-            ).stdout
-        )
-        self.assertEqual(
-            "Reports/great-zimbabwe-full-report.pdf",
-            attached["report"],
-        )
-        card = (self.root / attached["note"]).read_text(encoding="utf-8")
-        self.assertIn(
-            "[[../Reports/great-zimbabwe-full-report.pdf|完整研究报告]]",
-            card,
-        )
-        self.assertGreaterEqual(attached["report_validation"]["page_count"], 2)
-
     def test_alternate_mode_flips_after_a_card_is_shown(self) -> None:
         self.run_cli("configure", "--mode", "alternate")
         first_pick = json.loads(self.run_cli("pick", "--mode", "default", "--seed", "3").stdout)
@@ -495,7 +382,7 @@ class BoundaryCliTestCase(unittest.TestCase):
         self.assertNotEqual(0, repeated.returncode)
         self.assertIn("already finalized", repeated.stderr)
 
-    def test_language_change_keeps_the_existing_knowledge_map(self) -> None:
+    def test_language_change_keeps_the_existing_index(self) -> None:
         self.run_cli("configure", "--language", "en")
         body, sources = self.write_card_input()
         recorded = json.loads(
@@ -520,8 +407,12 @@ class BoundaryCliTestCase(unittest.TestCase):
             ).stdout
         )
         self.run_cli("feedback", "--id", recorded["id"], "--value", "new")
-        self.assertTrue((self.root / "知识边界地图.md").is_file())
-        self.assertFalse((self.root / "Knowledge Boundary Map.md").exists())
+        index_file = self.root / "INDEX.md"
+        self.assertTrue(index_file.is_file())
+        self.assertIn(
+            "- [Great Zimbabwe](Cards/great-zimbabwe.md)",
+            index_file.read_text(encoding="utf-8"),
+        )
 
     def test_tampered_state_cannot_delete_a_file_outside_boundary(self) -> None:
         body, sources = self.write_card_input()

@@ -10,7 +10,6 @@ A verified daily knowledge skill for discovering what you did not know to ask.
 [![GitHub stars](https://img.shields.io/github/stars/xingxingzhou469-max/boundary-skill?style=flat&color=yellow)](https://github.com/xingxingzhou469-max/boundary-skill/stargazers)
 [![Last commit](https://img.shields.io/github/last-commit/xingxingzhou469-max/boundary-skill)](https://github.com/xingxingzhou469-max/boundary-skill/commits/main)
 [![Languages](https://img.shields.io/badge/languages-中文%20%7C%20English-blue)](#english)
-[![Obsidian](https://img.shields.io/badge/Obsidian-ready-7c3aed)](https://obsidian.md)
 
 [为什么需要它](#为什么需要-boundary) · [实际效果](#一张卡片是什么样的) · [安装](#安装) · [工作方式](#它如何工作) · [English](#english)
 
@@ -18,11 +17,9 @@ A verified daily knowledge skill for discovering what you did not know to ask.
 
 ---
 
-Boundary 不会继续推荐“更多你已经喜欢的内容”。
+Boundary 不会继续推荐"更多你已经喜欢的内容"。
 
-它每天主动选择一个你大概率没有接触过、但值得知道的主题，查证来源，整理成一张 3～5 分钟可以读完的知识卡。你可以停在这里，也可以继续展开成研究简报或完整报告。
-
-历史、生命科学、金融、建筑、语言、法律、宗教、材料、地理……世界不应该只剩下算法认为你会点击的那一小部分。
+它每天主动选择一个你大概率没有接触过、但值得知道的主题，查证来源，整理成一张 3～5 分钟可以读完的知识卡。想深入时，它会展开成一份完整、深入但通俗易懂的研究报告。历史、生命科学、金融、建筑、语言、法律、宗教、材料、地理……世界不应该只剩下算法认为你会点击的那一小部分。
 
 ## 为什么需要 Boundary
 
@@ -32,7 +29,7 @@ Boundary 的目标不是增加信息量，而是扩大认知范围：
 
 - 不通过兴趣问卷预先定义你是谁；
 - 不读取其他聊天来推断政治立场、信仰或人格；
-- 不因为一次“跳过”就永久隐藏整个领域；
+- 不因为一次"跳过"就永久隐藏整个领域；
 - 不把随机冷知识、热点新闻或模型记忆包装成学习；
 - 每张卡片都必须经过查证并附上可以打开的来源。
 
@@ -52,7 +49,7 @@ Boundary 的目标不是增加信息量，而是扩大认知范围：
 研究者原有的世界观也可能影响他们如何解释材料。
 
 向外连接
-一件中国瓷器首先证明贸易联系，并不证明“中国人建造了城市”。
+一件中国瓷器首先证明贸易联系，并不证明"中国人建造了城市"。
 区分物品来源和社会创造者，是理解考古证据的重要能力。
 
 可信度：高
@@ -82,10 +79,10 @@ flowchart LR
     D --> E["生成 3～5 分钟知识卡"]
     E --> P["保存完整待确认卡片"]
     P --> F{"你的反馈"}
-    F -->|"已知道 / 新知识"| G["保存到 Obsidian"]
-    F -->|"深入了解"| H["生成研究简报"]
+    F -->|"已知道 / 新知识"| G["保存卡片到本地 Markdown"]
+    F -->|"深入了解"| H["生成完整深度研究报告"]
     F -->|"暂时跳过"| I["短期降低频率"]
-    G --> J["更新知识边界地图"]
+    G --> J["更新本地索引"]
     H --> J
 ```
 
@@ -106,21 +103,18 @@ flowchart LR
 
 选题还会主动轮换国家、文明和知识传统，避免长期只围绕中国、欧美或互联网最常见的叙事。
 
-## 三层阅读深度
+## 两个阅读层级
 
-Boundary 不会一开始就扔给你几十页报告，也不会让 Agent 自行猜测应该深入到哪一层。层级完全由你的操作决定。
+Boundary 只有两个层级：先宽泛了解，想深入时一步到底。层级完全由你的操作决定。
 
 | 层级 | 触发方式 | 输出 |
 |---|---|---|
 | **知识卡** | 默认 | 3～5 分钟直接阅读，至少两个独立来源 |
-| **研究简报** | 回复“深入了解” | 围绕一个核心问题，给出直接答案、关键证据、争议、不确定性和跨领域连接 |
-| **完整报告** | 明确要求完整研究 | 围绕一个明确的研究问题生成经过逐页检查、排版美观的 PDF |
+| **深度研究报告** | 回复"深入了解" | 围绕一个核心问题的一次完整、深入的研究报告：直接答案、背景、最强证据、争议、不确定性和跨领域连接，全部使用通俗语言写成 |
 
-“深入了解”永远生成研究简报，不会被自动升级为完整报告。每份简报都必须满足八项要求：开头提出一个核心问题；先给直接答案；解释最强证据及其可信原因；使用至少三个可靠且独立的来源；在重要事实旁放链接；说明争议或不确定性；只保留回答问题所需的背景；最后说明它如何改变、限定或扩展原知识卡。
+"深入了解"永远生成完整深度的研究报告，不会再出现"简报还是完整报告"之类的二次选择，也不会自动升级成任何后续步骤。每份报告都必须满足十项要求：开头提出一个核心问题；先给直接答案；解释最强证据及其可信原因；使用至少三个可靠且独立的来源；在重要事实旁放链接；说明争议或不确定性；只保留回答问题所需的背景；说明它如何改变、限定或扩展原知识卡；脱离卡片也能独立读懂；不使用未解释的术语和学术腔。
 
-研究简报结尾只提供“够了 / 继续完整研究”。只有你明确选择继续或直接要求完整报告后，Boundary 才会进入完整报告；开始前必须有一个明确的研究问题，不能只把知识卡标题扩写成长文。
-
-完整报告只以 PDF 作为最终交付格式，保存在 `Reports/`。PDF 使用清晰的字体层级、统一留白、克制配色、页码、可读引用和完整参考文献；表格、图表与图片必须清晰对齐。交付前会把每一页渲染成图片进行检查，修正裁切、重叠、乱码、断裂表格和不自然分页。无法生成或检查 PDF 时，不会用其他格式代替。
+报告以普通 Markdown 保存在 `Reports/`，在手机上的任何阅读器里都能直接打开。
 
 ## 可靠性不是装饰
 
@@ -133,26 +127,22 @@ Boundary 不会一开始就扔给你几十页报告，也不会让 Agent 自行�
 
 详细标准见 [`references/source-policy.md`](references/source-policy.md)。
 
-## Obsidian 联动
+## 本地存储：简单 Markdown，手机友好
 
-Boundary 可以写入现有 Obsidian Vault，也可以创建一个独立 Vault。它不要求插件，也不会修改 `.obsidian` 设置。
+Boundary 不需要任何笔记软件、插件或 Vault。它把一切保存为你指定的一个普通文件夹：
 
 ```text
-Boundary/
-├── 知识边界地图.md
-├── Cards/
-│   └── 每个主题一张独立笔记
-├── Reports/
-│   ├── 研究简报.md
-│   └── 完整研究报告.pdf
+<boundary-root>/
+├── INDEX.md                 # 知识索引：已确认卡片的一行一个链接
+├── Cards/                   # 每张已确认的知识卡一个 Markdown 文件
+├── Reports/                 # 深度研究报告（Markdown）
 └── _system/
-    ├── pending/
-    │   └── 尚未反馈的完整卡片
+    ├── pending/             # 尚未反馈的完整卡片
     ├── tmp/
-    └── state.json
+    └── state.json           # 透明历史状态
 ```
 
-每张已经展示的卡片会先完整保存在 `pending/`，因此关闭当前对话后仍然可以继续反馈。被接受的卡片会自动转为正式笔记、更新知识地图，并保留正文引用、结构化来源、反馈和 `[[双向链接]]`。选择“暂时跳过”的内容不会污染正式笔记，只会在透明的本地状态中短期避让。
+所有文件都是普通 Markdown 和 JSON，在任何设备上（包括手机）用任何阅读器都能直接打开；不依赖 Obsidian 或其他特定应用，没有双链、插件或专有格式。每张已经展示的卡片会先完整保存在 `pending/`，因此关闭当前对话后仍然可以继续反馈。被接受的卡片会自动转为正式笔记、写入索引，并保留正文引用、结构化来源和反馈。"暂时跳过"的内容不会污染正式笔记，只会在透明的本地状态中短期避让。
 
 所有数据都保存在用户选择的本地目录，不会上传到 Boundary 服务——因为不存在 Boundary 服务。
 
@@ -181,9 +171,7 @@ git clone https://github.com/xingxingzhou469-max/boundary-skill ~/.codex/skills/
 Today's boundary, in English
 ```
 
-首次运行只会询问输出语言、选题模式和 Obsidian 保存位置，不会要求填写兴趣问卷。
-
-完整报告使用 ReportLab 生成，并通过 Poppler 逐页渲染。只有明确请求完整报告时才需要 `requirements-pdf.txt` 中的 Python 依赖和 `pdftoppm`；Boundary 会先检查这些能力，缺失时停止并说明，不会输出未经检查的替代格式。
+首次运行只会询问输出语言、选题模式和保存目录，不会要求填写兴趣问卷。状态脚本只使用 Python 标准库，没有任何第三方依赖。
 
 ### 每日自动送达
 
@@ -201,21 +189,18 @@ Boundary 负责选题、查证、生成和记录；定时由你正在使用的 A
 boundary-skill/
 ├── SKILL.md
 ├── agents/openai.yaml
-├── requirements-pdf.txt
 ├── scripts/
-│   ├── state.py
-│   └── report.py
+│   └── state.py
 ├── tests/
-│   ├── test_state_cli.py
-│   └── test_report_cli.py
+│   └── test_state_cli.py
 └── references/
     ├── domains.md
-    ├── obsidian.md
+    ├── storage.md
     ├── output-formats.md
     └── source-policy.md
 ```
 
-状态脚本只使用 Python 标准库，负责完整卡片暂存、近期领域与地区覆盖、结构化来源校验、重复与跳过冷却、反馈、Obsidian 笔记和知识地图。报告脚本负责生成 PDF、逐页渲染、哈希校验和视觉确认门槛。内容研究仍由安装该 Skill 的 Agent 使用其可用搜索工具完成。
+状态脚本只使用 Python 标准库，负责完整卡片暂存、近期领域与地区覆盖、结构化来源校验、重复与跳过冷却、反馈、卡片笔记、索引和深度报告关联。内容研究仍由安装该 Skill 的 Agent 使用其可用搜索工具完成。
 
 ## 设计来源
 
@@ -223,8 +208,7 @@ Boundary 借鉴了这些优秀开源项目的思路，并重新组合成一条�
 
 - [`BelCorentin/curiosity`](https://github.com/BelCorentin/curiosity) — 每日知识体验、向外连接和关联笔记；
 - [`Koulb/paper-scout`](https://github.com/Koulb/paper-scout) — 历史记录、去重和每日筛选；
-- [`199-biotechnologies/claude-deep-research-skill`](https://github.com/199-biotechnologies/claude-deep-research-skill) — 引用核验和研究报告标准；
-- [`haroontrailblazer/EduOrchestrate`](https://github.com/haroontrailblazer/EduOrchestrate) — 将每日调度与内容生成分开。
+- [`199-biotechnologies/claude-deep-research-skill`](https://github.com/199-biotechnologies/claude-deep-research-skill) — 引用核验和深度研究标准。
 
 它们解决了 Boundary 的一部分问题，但 Boundary 的选题、反馈、十二领域覆盖和防信息茧房逻辑是独立设计的。
 
@@ -236,7 +220,7 @@ Boundary 借鉴了这些优秀开源项目的思路，并重新组合成一条�
 
 Recommendation systems are good at predicting what you will click next. They are much worse at showing you an important idea from a field you have never thought to explore.
 
-Boundary selects one topic, verifies it against reliable sources, and turns it into a direct 3–5 minute knowledge card. You can stop there, request a research brief, or expand it into a full cited report.
+Boundary selects one topic, verifies it against reliable sources, and turns it into a direct 3–5 minute knowledge card. When you want more, it expands into one complete, in-depth research report written in plain language.
 
 ### Two discovery modes
 
@@ -247,21 +231,18 @@ Boundary selects one topic, verifies it against reliable sources, and turns it i
 
 Both modes reject unsupported trivia, semantic repeats, and topics that cannot be verified with at least two independent sources.
 
-### Three depth levels
+### Two depth levels
 
 The user's action, not the model's judgment, determines the level:
 
 | Level | Trigger | Output |
 |---|---|---|
 | **Knowledge card** | Default | A direct introduction to what the topic is and why it matters |
-| **Research brief** | Choose `Deep dive` | One central question, a direct answer, the strongest evidence, uncertainty, and what the deeper evidence changes |
-| **Full report** | Explicitly request a complete/full report | A polished, visually validated PDF built around a specific research question |
+| **Deep research report** | Choose `Deep dive` | One complete, in-depth research report around a specific question: direct answer, background, strongest evidence, uncertainty, and cross-domain implications, all in plain language |
 
-`Deep dive` always produces a research brief, never a full report. Every brief must state one question, answer it directly, explain the strongest evidence, use at least three strong independent sources, cite important claims in place, state uncertainty, exclude unnecessary background, and explain how it changes or extends the original card.
+`Deep dive` always produces the full in-depth report — there is no intermediate brief and no further depth choice. Every report must state one question, answer it directly, explain the strongest evidence, use at least three strong independent sources, cite important claims in place, state uncertainty, include only needed background, explain how it changes or extends the original card, stand alone without the card, and avoid unexplained jargon.
 
-A brief ends with `Enough / Continue to full report`. Boundary generates a full report only after the user explicitly continues or otherwise requests one. A specific research question must be established first; a card title alone is not enough.
-
-The final full report is delivered only as a PDF and saved under `Reports/`. It uses a clear typographic hierarchy, consistent spacing, restrained color, page numbers, readable citations, and a complete bibliography. Every page is rendered and visually inspected before delivery; clipping, overlaps, missing glyphs, broken tables, and awkward page breaks must be corrected. Boundary does not substitute another final format when PDF generation or visual validation is unavailable.
+Reports are saved as plain Markdown under `Reports/` and open in any reader, including on phones.
 
 ### What makes it different
 
@@ -270,11 +251,11 @@ The final full report is delivered only as a PDF and saved under `Reports/`. It 
 - Does not build a political, religious, medical, financial, or personality profile.
 - A skip only reduces short-term frequency; it never permanently blocks a field.
 - Supports Chinese and English with the same evidence standard.
-- Saves accepted cards, reports, citations, and meaningful wikilinks to Obsidian.
+- Saves accepted cards, reports, citations, and the index as plain Markdown and JSON — no vault, plugin, or notes app required.
 - Keeps all history in transparent local files.
 - Persists the complete shown card before delivery, so feedback still works after the original chat closes.
 - Validates structured sources, recent domain and region coverage, duplicate payloads, and skip cooldowns.
-- Generates full reports as PDFs that cannot be attached until every rendered page is visually approved.
+- The state script uses only the Python standard library.
 
 ### Install
 
@@ -296,7 +277,7 @@ Use Wander mode today.
 Teach me something important that is probably outside my field.
 ```
 
-On first run, Boundary asks only for language, discovery mode, and Obsidian location. It does not ask for an interest profile or inspect unrelated conversations.
+On first run, Boundary asks only for language, discovery mode, and the save folder. It does not ask for an interest profile or inspect unrelated conversations.
 
 For automatic delivery, ask a host that supports scheduled tasks:
 

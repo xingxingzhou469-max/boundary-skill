@@ -35,7 +35,7 @@ Avoid clickbait, fake quotations, inflated claims, unexplained jargon, and long 
 
 ## Structured source metadata
 
-Every card and brief must provide a UTF-8 JSON array to `state.py`. Each source object requires:
+Every card and deep research report must provide a UTF-8 JSON array to `state.py`. Each source object requires:
 
 ```json
 {
@@ -47,102 +47,52 @@ Every card and brief must provide a UTF-8 JSON array to `state.py`. Each source 
 }
 ```
 
-Allowed `kind` values are `primary`, `academic`, `review`, `authoritative`, `expert`, and `journalism`. URLs and publishers must be distinct. A daily card requires at least two sources; a research brief requires at least three.
+Allowed `kind` values are `primary`, `academic`, `review`, `authoritative`, `expert`, and `journalism`. URLs and publishers must be distinct. A daily card requires at least two sources; a deep research report requires at least three.
 
-## Small research brief
+## Deep research report
 
-Always use this format after the user chooses `Deep dive`/`深入了解`. A deep-dive response is a research brief, never a full report. Its scope is one central question derived from the card; reading time is a consequence of that scope, not the definition of quality.
+Always use this level after the user chooses `Deep dive`/`深入了解`. A deep-dive response is one complete, in-depth research report — it is the final depth level and is never followed by another "choose your depth" step. Its depth should match what a full research report would deliver, but written for a curious reader rather than an academic audience.
+
+The report answers one central question derived from the card. The question must be specific; never expand a card title into a report without a research question.
 
 ```markdown
-# [Topic] — Research Brief
+# [Topic] — 深度研究报告 / Deep Research Report
 
-## Research question
-## Executive answer
-## Background and definitions
-## What the strongest evidence shows
-## What remains disputed or unknown
-## Cross-domain implications
-## What this changes from the original card
-## References
+## 研究问题 / Research question
+## 直接答案 / Executive answer
+## 背景与定义 / Background and definitions
+## 最强证据说明了什么 / What the strongest evidence shows
+## 争议与未知 / What remains disputed or unknown
+## 跨领域连接 / Cross-domain implications
+## 这如何改变原卡片 / What this changes from the original card
+## 完整参考来源 / References
 
-**Next:** Enough / Continue to full report
+**下一步 / Next:** 已知道 / 足够了
 ```
 
-Adapt the middle sections to the subject. For academic, medical, financial, legal, historical, or contested material, include every domain-specific item required by `source-policy.md`.
+### Depth and readability
 
-Every brief must pass all eight checks:
+- **Depth:** cover background, the strongest evidence and why it is credible, competing interpretations, limitations, cross-domain implications, and the full reference list. Be comprehensive, not a summary.
+- **Readability:** write in plain, direct language. Explain specialized terms on first use; prefer concrete examples over abstract phrasing. The report should read like a long-form explainer, not a journal article or a dry literature review.
+- **Length:** as long as the research question requires. There is no upper cap; a genuinely deep question may need several thousand words.
+- Use at least three strong, genuinely independent sources, with more when the question demands it. Place links next to the important claims they support.
+- Keep the numbered structure above; adapt the middle sections to the subject. For academic, medical, financial, legal, historical, or contested material, include every domain-specific item required by `source-policy.md`.
 
-1. State one central question at the beginning.
+### Quality checks (all must pass)
+
+1. State one central research question at the beginning.
 2. Give the direct answer before the detailed explanation.
 3. Explain the strongest evidence and why it is credible.
 4. Use at least three strong, genuinely independent sources.
 5. Place links next to the important claims they support.
 6. State material uncertainty, disagreement, or missing evidence.
-7. Include only the background needed to answer the question; do not turn the brief into an encyclopedia entry.
-8. End by explaining how the deeper evidence changes, qualifies, or extends the original card.
-
-## Full research report
-
-Generate only after an explicit request for a complete/full report. Establish a specific research question before researching. If the user's question is already clear, use it; otherwise ask for it. Do not generate a full report by merely expanding the card title.
-
-The final deliverable must be a polished PDF. Use the following as the report's content structure, not as a raw Markdown deliverable:
-
-1. Title and specific research question
-2. Executive summary
-3. Scope and source-selection method
-4. Necessary background
-5. Main findings
-6. Competing interpretations or counter-evidence
-7. Cross-domain synthesis
-8. Limitations and open questions
-9. Practical implications (educational, not personal advice)
-10. Complete bibliography
-11. Methodology appendix
-
-Verify every material claim and citation before delivery. State assumptions explicitly.
-
-Write the report input as UTF-8 JSON:
-
-```json
-{
-  "title": "...",
-  "question": "...",
-  "language": "zh",
-  "generated_at": "YYYY-MM-DD",
-  "summary": "...",
-  "sections": [
-    {
-      "heading": "...",
-      "paragraphs": ["..."],
-      "bullets": ["..."]
-    }
-  ],
-  "references": [
-    {
-      "title": "...",
-      "url": "https://...",
-      "publisher": "..."
-    }
-  ]
-}
-```
-
-Use numbered citations such as `[1]` in section paragraphs and keep their numbering aligned with `references`.
-
-### PDF delivery and visual quality
-
-- Save the final file as `Reports/<filesystem-safe-title>.pdf` inside the user-approved Boundary root. Do not deliver raw Markdown in place of the PDF.
-- Use an A4 page design with a restrained visual system: readable body type, clear heading hierarchy, consistent margins and spacing, balanced whitespace, and a limited color palette.
-- Include a designed title page with the title, research question, generation date, and Boundary label. Add a table of contents when the report has enough sections to benefit from one.
-- Use fonts that fully support the report language. Chinese and English text must render without missing glyphs, black squares, or unintended font substitutions.
-- Add consistent page numbers and unobtrusive headers or footers. Keep headings with the paragraphs they introduce and avoid nearly empty pages.
-- Place citations next to the claims they support. Make links readable and, when supported, clickable. The bibliography must include usable URLs, DOIs, or stable identifiers.
-- Keep tables, charts, diagrams, and images sharp, aligned, labeled, and legible at normal viewing size. Every visual must contribute to the research question.
-- Render every PDF page to an image and inspect the entire document. Correct clipped text, overlaps, broken tables, awkward page breaks, inconsistent spacing, unreadable citations, and other visual defects before delivery.
-- Deliver only after both content verification and the complete visual inspection pass.
+7. Include only the background needed to answer the question; do not pad with an encyclopedia entry.
+8. Explain how the deeper evidence changes, qualifies, or extends the original card.
+9. Readable without the card: a reader who has never seen the card can follow the report alone.
+10. Plain language: no unexplained jargon, no academic hedging for its own sake.
 
 ## Examples of good framing
 
-- Do not stop at “Mount Tai was used for feng and shan rites.” Explain how sacred geography, imperial legitimacy, and political order became connected.
+- Do not stop at "Mount Tai was used for feng and shan rites." Explain how sacred geography, imperial legitimacy, and political order became connected.
 - Do not reduce the DNA story to two discoverers. Explain the evidence chain, model building, and contributions such as Rosalind Franklin's and Maurice Wilkins's X-ray work without replacing one simplistic hero story with another.
 - Do not report a stock's daily move as knowledge. Explain a durable mechanism such as market making, liquidity, or the difference between nominal and real returns, with dated sources.

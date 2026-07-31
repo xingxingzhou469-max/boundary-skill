@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import copy
-import hashlib
 import json
 import os
 import random
@@ -182,14 +181,14 @@ def validate_config(config: dict[str, Any], path: Path) -> None:
         raise SystemExit(f"Invalid configured language in {path}")
     if config.get("mode") not in MODES:
         raise SystemExit(f"Invalid configured mode in {path}")
-    map_name = config.get("map")
+    index_name = config.get("index")
     if (
-        not isinstance(map_name, str)
-        or not map_name
-        or Path(map_name).name != map_name
-        or Path(map_name).suffix.lower() != ".md"
+        not isinstance(index_name, str)
+        or not index_name
+        or Path(index_name).name != index_name
+        or Path(index_name).suffix.lower() != ".md"
     ):
-        raise SystemExit(f"Invalid configured knowledge map in {path}")
+        raise SystemExit(f"Invalid configured index file in {path}")
     timezone_for(config)
 
 
@@ -230,7 +229,6 @@ def validate_entry(item: Any, path: Path) -> None:
         "sources",
         "draft",
         "note",
-        "brief",
         "report",
     }
     missing = sorted(required - item.keys())
@@ -303,37 +301,18 @@ def stored_artifact_path(root: Path, relative: Any, required_prefix: str) -> Pat
     return candidate
 
 
-def file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+def index_path(config: dict[str, Any]) -> Path:
+    return Path(config["root"]) / config["index"]
 
 
-def map_path(config: dict[str, Any]) -> Path:
-    return Path(config["root"]) / config["map"]
-
-
-def initial_map(language: str) -> str:
-    title = "# 知识边界地图" if language == "zh" else "# Knowledge Boundary Map"
+def initial_index(language: str) -> str:
+    title = "# 知识索引" if language == "zh" else "# Knowledge Index"
     intro = (
-        "这里记录已经确认的知识卡，按主要领域组织。"
+        "这里按时间列出已经确认的知识卡，每张卡是一个独立 Markdown 文件，可直接在手机上打开阅读。"
         if language == "zh"
-        else "Accepted Boundary cards, organized by primary domain."
+        else "Accepted Boundary cards in reading order. Each card is a standalone Markdown file."
     )
-    lines = [title, "", intro, ""]
-    for domain in DOMAINS:
-        lines.extend(
-            [
-                f"## {DOMAIN_LABELS[language][domain]}",
-                "",
-                f"<!-- boundary:{domain}:start -->",
-                f"<!-- boundary:{domain}:end -->",
-                "",
-            ]
-        )
-    return "\n".join(lines).rstrip() + "\n"
+    return f"{title}\n\n{intro}\n"
 
 
 def resolve_mode(requested: str, config: dict[str, Any], history: list[dict[str, Any]]) -> str:
@@ -469,14 +448,14 @@ def card_frontmatter(entry: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def brief_frontmatter(
+def deep_frontmatter(
     entry: dict[str, Any], question: str, sources: list[dict[str, str]]
 ) -> str:
     lines = [
         "---",
         f'created: "{now_iso()}"',
-        "type: boundary-research-brief",
-        f'originating_card: "{entry["note"]}"',
+        "type: boundary-deep-research",
+        f'originating_card: "Cards/{entry["slug"]}.md"',
         f'question: {json.dumps(question, ensure_ascii=False)}',
         "source_urls:",
     ]
@@ -485,16 +464,11 @@ def brief_frontmatter(
     return "\n".join(lines)
 
 
-def add_map_entry(map_text: str, entry: dict[str, Any]) -> str:
-    domain = entry["domains"][0]
-    marker = f"<!-- boundary:{domain}:end -->"
-    if marker not in map_text:
-        raise SystemExit(f"Knowledge map is missing its managed marker for {domain}")
-    link = f'[[Cards/{entry["slug"]}|{entry["title"]}]]'
-    row = f'- {link} — {entry["summary"]}\n'
-    if row in map_text:
-        return map_text
-    return map_text.replace(marker, row + marker, 1)
+def add_index_entry(index_text: str, entry: dict[str, Any]) -> str:
+    row = f'- [{entry["title"]}](Cards/{entry["slug"]}.md) — {entry["summary"]}\n'
+    if row in index_text:
+        return index_text
+    return index_text.rstrip() + "\n" + row
 
 
 def find_entry(state: dict[str, Any], identifier: str) -> dict[str, Any]:
@@ -518,7 +492,7 @@ def cmd_init(args: argparse.Namespace) -> None:
     existing_state = root / "_system" / "state.json"
     if existing_state.exists():
         raise SystemExit(f"Boundary state already exists: {existing_state}")
-    for directory in ("Cards", "Reports", "_system/pending", "_system/tmp/pdf"):
+    for directory in ("Cards", "Reports", "_system/pending", "_system/tmp"):
         (root / directory).mkdir(parents=True, exist_ok=True)
 
     created = now_iso()
@@ -527,17 +501,16 @@ def cmd_init(args: argparse.Namespace) -> None:
         "root": str(root),
         "language": args.language,
         "mode": args.mode,
-        "storage": args.storage,
         "timezone": args.timezone,
-        "map": "知识边界地图.md" if args.language == "zh" else "Knowledge Boundary Map.md",
+        "index": "INDEX.md",
         "created_at": created,
     }
     state = {"version": STATE_VERSION, "created_at": created, "history": []}
     atomic_json_write(cfg_path, config)
     atomic_json_write(existing_state, state)
-    knowledge_map = map_path(config)
-    if not knowledge_map.exists():
-        atomic_text_write(knowledge_map, initial_map(args.language))
+    index_file = index_path(config)
+    if not index_file.exists():
+        atomic_text_write(index_file, initial_index(args.language))
     print(json.dumps({"config": str(cfg_path), "root": str(root)}, ensure_ascii=False))
 
 
@@ -621,7 +594,6 @@ def cmd_record(args: argparse.Namespace) -> None:
         "sources": sources,
         "draft": relative_to_root(root, draft_path),
         "note": None,
-        "brief": None,
         "report": None,
     }
     atomic_text_write(draft_path, body + "\n")
@@ -685,151 +657,77 @@ def cmd_feedback(args: argparse.Namespace) -> None:
         print(json.dumps(entry, ensure_ascii=False, indent=2))
         return
 
-    knowledge_map = map_path(config)
+    index_file = index_path(config)
     try:
-        map_text = knowledge_map.read_text(encoding="utf-8")
+        index_text = index_file.read_text(encoding="utf-8")
     except FileNotFoundError as exc:
-        raise SystemExit(f"Knowledge map is missing: {knowledge_map}") from exc
+        raise SystemExit(f"Index file is missing: {index_file}") from exc
     note_path = root / "Cards" / f"{entry['slug']}.md"
     if note_path.exists():
         raise SystemExit(f"Card note already exists: {note_path}")
     body = draft_path.read_text(encoding="utf-8").strip()
     updated["note"] = relative_to_root(root, note_path)
     note_text = card_frontmatter(updated) + body + "\n"
-    map_text = add_map_entry(map_text, updated)
+    index_text = add_index_entry(index_text, updated)
 
     atomic_text_write(note_path, note_text)
-    atomic_text_write(knowledge_map, map_text)
+    atomic_text_write(index_file, index_text)
     entry.update(updated)
     atomic_json_write(path, state)
     draft_path.unlink()
     print(json.dumps(entry, ensure_ascii=False, indent=2))
 
 
-def cmd_brief(args: argparse.Namespace) -> None:
+def cmd_deep(args: argparse.Namespace) -> None:
     _, config = load_config(args)
     path, state = load_state(config)
     root = Path(config["root"])
     entry = find_entry(state, args.id)
     if entry["feedback"] != "deep":
-        raise SystemExit("A research brief requires finalized deep feedback")
+        raise SystemExit("A deep research report requires finalized deep feedback")
     if not entry["note"]:
         raise SystemExit("The originating card note is missing from state")
-    if entry["brief"]:
-        raise SystemExit(f"Research brief already exists: {entry['brief']}")
+    if entry["report"]:
+        raise SystemExit(f"Deep research report already exists: {entry['report']}")
 
     input_path = Path(args.body).expanduser().resolve()
     try:
         body = input_path.read_text(encoding="utf-8").strip()
     except FileNotFoundError as exc:
-        raise SystemExit(f"Missing research brief body: {input_path}") from exc
+        raise SystemExit(f"Missing deep research report body: {input_path}") from exc
     if not body:
-        raise SystemExit("Research brief body cannot be empty")
+        raise SystemExit("Deep research report body cannot be empty")
     sources = read_sources(Path(args.sources).expanduser().resolve(), minimum=3)
 
     card_path = stored_artifact_path(root, entry["note"], "Cards/")
     if not card_path.is_file():
         raise SystemExit(f"Originating card note is missing: {card_path}")
-    brief_path = root / "Reports" / f"{entry['slug']}-research-brief.md"
-    if brief_path.exists():
-        raise SystemExit(f"Research brief file already exists: {brief_path}")
+    report_path = root / "Reports" / f"{entry['slug']}-deep-research.md"
+    if report_path.exists():
+        raise SystemExit(f"Deep research report file already exists: {report_path}")
 
-    origin_link = f"[[../Cards/{entry['slug']}|{entry['title']}]]"
-    brief_text = (
-        brief_frontmatter(entry, args.question.strip(), sources)
+    origin_link = f"[{entry['title']}](../Cards/{entry['slug']}.md)"
+    report_text = (
+        deep_frontmatter(entry, args.question.strip(), sources)
         + f"**Originating card:** {origin_link}\n\n"
         + body
         + "\n"
     )
     card_text = card_path.read_text(encoding="utf-8").rstrip()
-    brief_link = f"[[../Reports/{entry['slug']}-research-brief|研究简报]]"
-    if brief_link not in card_text:
-        heading = "深入研究" if config["language"] == "zh" else "Further research"
-        label = "研究简报" if config["language"] == "zh" else "Research brief"
-        brief_link = f"[[../Reports/{entry['slug']}-research-brief|{label}]]"
-        card_text += f"\n\n## {heading}\n\n- {brief_link}\n"
+    heading = "深入了解" if config["language"] == "zh" else "Deep dive"
+    label = "深度研究报告" if config["language"] == "zh" else "Deep research report"
+    report_link = f"[{label}](../Reports/{entry['slug']}-deep-research.md)"
+    if report_link not in card_text:
+        card_text += f"\n\n## {heading}\n\n- {report_link}\n"
 
     updated = copy.deepcopy(entry)
-    updated["brief"] = relative_to_root(root, brief_path)
-    updated["brief_question"] = args.question.strip()
-    updated["brief_sources"] = sources
-    atomic_text_write(brief_path, brief_text)
+    updated["report"] = relative_to_root(root, report_path)
+    updated["report_question"] = args.question.strip()
+    updated["report_sources"] = sources
+    atomic_text_write(report_path, report_text)
     atomic_text_write(card_path, card_text)
     entry.update(updated)
     atomic_json_write(path, state)
-    print(json.dumps(entry, ensure_ascii=False, indent=2))
-
-
-def cmd_report(args: argparse.Namespace) -> None:
-    _, config = load_config(args)
-    path, state = load_state(config)
-    root = Path(config["root"])
-    entry = find_entry(state, args.id)
-    if entry["feedback"] not in {"known", "new", "deep"}:
-        raise SystemExit("A full report can only be attached to an accepted card")
-    if not entry["note"]:
-        raise SystemExit("The originating card note is missing from state")
-    if entry["report"]:
-        raise SystemExit(f"Full report already exists: {entry['report']}")
-
-    manifest_path = Path(args.manifest).expanduser().resolve()
-    manifest_relative = relative_to_root(root, manifest_path)
-    if not manifest_relative.startswith("_system/"):
-        raise SystemExit("The report validation manifest must be inside _system/")
-    manifest = load_json(manifest_path)
-    if manifest.get("version") != 1:
-        raise SystemExit("Unsupported report validation manifest")
-    if not manifest.get("visual_approved_at"):
-        raise SystemExit("Every rendered PDF page must be visually approved before attachment")
-    pdf = Path(str(manifest.get("pdf", ""))).expanduser().resolve()
-    pdf_relative = relative_to_root(root, pdf)
-    if not pdf_relative.startswith("Reports/") or pdf.suffix.lower() != ".pdf":
-        raise SystemExit("The full report must be a PDF inside Reports/")
-    if not pdf.is_file() or not pdf.read_bytes().startswith(b"%PDF-"):
-        raise SystemExit(f"Invalid or missing PDF: {pdf}")
-    if file_sha256(pdf) != manifest.get("pdf_sha256"):
-        raise SystemExit("PDF changed after visual approval")
-    page_count = manifest.get("page_count")
-    rendered_pages = manifest.get("rendered_pages")
-    if not isinstance(page_count, int) or page_count < 2:
-        raise SystemExit("The approved PDF page count is invalid")
-    if not isinstance(rendered_pages, list) or len(rendered_pages) != page_count:
-        raise SystemExit("The approved rendered-page list is invalid")
-    rendered_paths = [Path(item).expanduser().resolve() for item in rendered_pages]
-    for rendered in rendered_paths:
-        rendered_relative = relative_to_root(root, rendered)
-        if not rendered_relative.startswith("_system/tmp/pdf/") or not rendered.is_file():
-            raise SystemExit(f"Approved rendered page is missing or misplaced: {rendered}")
-
-    card_path = stored_artifact_path(root, entry["note"], "Cards/")
-    if not card_path.is_file():
-        raise SystemExit(f"Originating card note is missing: {card_path}")
-    card_text = card_path.read_text(encoding="utf-8").rstrip()
-    label = "完整研究报告" if config["language"] == "zh" else "Full research report"
-    link = f"[[../{pdf_relative}|{label}]]"
-    if link not in card_text:
-        heading = "完整研究" if config["language"] == "zh" else "Full research"
-        card_text += f"\n\n## {heading}\n\n- {link}\n"
-
-    updated = copy.deepcopy(entry)
-    updated["report"] = pdf_relative
-    updated["report_validation"] = {
-        "pdf_sha256": manifest["pdf_sha256"],
-        "page_count": page_count,
-        "built_at": manifest.get("built_at"),
-        "visual_approved_at": manifest["visual_approved_at"],
-        "automated_checks": manifest.get("automated_checks", []),
-    }
-    atomic_text_write(card_path, card_text)
-    entry.update(updated)
-    atomic_json_write(path, state)
-
-    for rendered in rendered_paths:
-        rendered.unlink()
-    try:
-        manifest_path.unlink()
-    except FileNotFoundError:
-        pass
     print(json.dumps(entry, ensure_ascii=False, indent=2))
 
 
@@ -842,7 +740,6 @@ def parser() -> argparse.ArgumentParser:
     init.add_argument("--root", required=True)
     init.add_argument("--language", choices=("zh", "en"), required=True)
     init.add_argument("--mode", choices=tuple(sorted(MODES)), required=True)
-    init.add_argument("--storage", choices=("existing", "new"), required=True)
     init.add_argument("--timezone", default=detect_timezone())
     init.set_defaults(func=cmd_init)
 
@@ -884,20 +781,15 @@ def parser() -> argparse.ArgumentParser:
     feedback.add_argument("--value", choices=("known", "new", "deep", "skipped"), required=True)
     feedback.set_defaults(func=cmd_feedback)
 
-    brief = commands.add_parser("brief", help="Attach a verified research brief to a deep card")
-    brief.add_argument("--id", required=True)
-    brief.add_argument("--question", required=True)
-    brief.add_argument("--body", required=True, help="UTF-8 Markdown research brief")
-    brief.add_argument("--sources", required=True, help="JSON file containing at least three sources")
-    brief.set_defaults(func=cmd_brief)
-
-    report = commands.add_parser(
-        "report",
-        help="Attach a visually approved full-report PDF to an accepted card",
+    deep = commands.add_parser(
+        "deep",
+        help="Attach a verified deep research report to a deep card",
     )
-    report.add_argument("--id", required=True)
-    report.add_argument("--manifest", required=True)
-    report.set_defaults(func=cmd_report)
+    deep.add_argument("--id", required=True)
+    deep.add_argument("--question", required=True)
+    deep.add_argument("--body", required=True, help="UTF-8 Markdown deep research report")
+    deep.add_argument("--sources", required=True, help="JSON file containing at least three sources")
+    deep.set_defaults(func=cmd_deep)
     return root
 
 
