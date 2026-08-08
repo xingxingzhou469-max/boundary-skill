@@ -23,13 +23,13 @@ Use these 12 stable primary domain IDs. A card may carry additional secondary do
 
 Choose a domain with low recent coverage, then select a topic with high lasting value. Compare three candidates using these criteria:
 
-1. **Unfamiliarity:** likely outside the user's demonstrated coverage; do not infer this from stereotypes.
-2. **Importance:** helps explain a consequential mechanism, institution, event, idea, or way of seeing.
+1. **Unfamiliarity:** likely outside the user's demonstrated coverage; do not infer this from stereotypes. Unfamiliarity is measured against the user, not against the general public: a topic may be canonical inside its discipline and still qualify if the user has never encountered it.
+2. **Importance:** helps explain a consequential mechanism, institution, event, idea, or way of seeing. Foundational knowledge of a field — its central concepts, theorems, mechanisms, institutions, and canonical works — counts as important even when it is well known to practitioners of that field.
 3. **Durability:** remains useful beyond the current news cycle.
 4. **Connection:** creates a meaningful bridge to at least one other domain, era, or culture.
 5. **Evidence:** can be supported by adequate independent, high-quality sources.
 
-Do not select a topic merely because it is amusing, obscure, or viral.
+Obscurity is not a goal and never compensates for lack of importance. Do not select a topic merely because it is amusing, obscure, or viral, and do not reject a topic merely because it is well known within its field. A discipline's core concept the user does not know is as legitimate a boundary as any niche curiosity — and often the higher-value choice.
 
 ## Wander mode
 
