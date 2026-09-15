@@ -1,11 +1,19 @@
 ---
 name: boundary
-description: Expand a user's knowledge boundary with a verified daily knowledge card selected either for high-value cross-domain discovery or genuine random wandering. Use when the user asks for today's boundary, a daily fact, something worth knowing outside their field, a random unfamiliar topic, help escaping an information bubble, or a deep-dive report about a Boundary card. Also use when the user replies to an active Boundary card with 已知道, 新知识, 深入了解, 暂时跳过, known, new, deep dive, or skip.
+description: Expand a user's knowledge boundary with a verified daily knowledge card focused on important, transferable ideas outside their demonstrated coverage, with optional random wandering only when requested. Use when the user asks for today's boundary, a high-value idea from another field, something worth knowing outside their field, a random unfamiliar topic, help escaping an information bubble, or a deep-dive report about a Boundary card. Also use when the user replies to an active Boundary card with 已知道, 新知识, 深入了解, 暂时跳过, known, new, deep dive, or skip.
 ---
 
 # Boundary
 
-Deliver one verified, worthwhile encounter with the wider world. Optimize for durable understanding and genuine novelty, not engagement, trendiness, or agreement with the user.
+Deliver one verified, worthwhile encounter with the wider world. In the default `boundary` mode, optimize first for importance, transferability, and durable understanding; use unfamiliarity to find a real blind spot, and treat novelty as a tie-breaker rather than the goal.
+
+## Selection objective
+
+Boundary is a high-value blind-spot system, not a rarity detector. Seek the nearest valuable frontier: a concept, mechanism, institution, consensus, or consequential case that the user may not know and that improves how they understand or decide something.
+
+Unknownness is necessary but insufficient. If a topic is unfamiliar but its value is mainly that it is obscure, amusing, or surprising, reject it. A canonical idea from another field is often a better boundary card than a rare fact from a distant field.
+
+For every candidate, answer in one sentence: "After learning this, what will the reader understand or judge better?" If there is no concrete answer, do not select the candidate. Apply the complete quality gate in [references/domains.md](references/domains.md).
 
 ## Load only what the task needs
 
@@ -19,7 +27,7 @@ Deliver one verified, worthwhile encounter with the wider world. Optimize for du
 If Boundary is not configured, ask for only these operational choices in one compact exchange:
 
 1. Output language: Chinese or English. Default to the user's current language.
-2. Selection mode: `boundary`, `wander`, or `alternate`.
+2. Selection mode: `boundary` (recommended high-value expansion), `wander` (explicit random exploration), or `alternate`.
 3. The absolute folder where Boundary should save its files. Any folder works; all files are plain Markdown and JSON readable on any device.
 
 Do not ask for interests, administer a knowledge test, inspect unrelated conversations, or infer a personal profile. Do not create a schedule during setup unless the user explicitly asks for daily delivery.
@@ -55,14 +63,16 @@ python3 "$SKILL_DIR/scripts/state.py" configure --root "/new/absolute/path"
    python3 "$SKILL_DIR/scripts/state.py" context
    ```
 
-2. Resolve the mode. For an interactive run, honor the user's current choice. For scheduled delivery, use the saved default. `alternate` switches between `boundary` and `wander`.
-3. Pick a primary domain with the script:
+2. Resolve the mode. For an interactive run, honor the user's current choice. For scheduled delivery, use the saved default. `alternate` switches between `boundary` and `wander`; do not silently use `wander` merely because a domain is undercovered.
+3. Use the script to get a primary domain hint:
 
    ```bash
    python3 "$SKILL_DIR/scripts/state.py" pick --mode default
    ```
 
-4. Generate 3 candidate topics inside that domain. Apply the selected mode's rules from `domains.md`. Compare candidate questions and summaries with the recent context. Reject semantic repeats, topics in skip cooldown, weak trivia, and topics without adequate sources.
+   Treat the returned domain as a mild diversity hint, not a mandate. If it produces no candidate that passes the quality gate, pick again or use another domain.
+
+4. Generate 3 candidate topics. Start with the hinted domain, but compare candidates from another domain when that is needed to find a stronger topic. Apply the selected mode's rules from `domains.md`. In `boundary` mode, prefer field-core concepts, widely supported ideas, reusable mechanisms, important institutions, and consequential everyday knowledge. Compare candidates by importance and transferability first, then explicit relevance, durability, unfamiliarity, connection, and novelty. Reject semantic repeats, topics in skip cooldown, weak trivia, and topics without adequate sources. If no candidate clears the importance floor, do not fill the slot; choose a different domain or generate a new set.
 5. Research before writing. Never publish a card from model memory alone. Follow `source-policy.md`, open the underlying sources, and prepare the structured source metadata required by `output-formats.md`.
 6. Draft exactly one direct-reading card using `output-formats.md`. Do not require a guess or quiz. Write the exact delivered Markdown and structured sources to temporary files inside `<boundary-root>/_system/tmp/`.
 7. Persist the complete card as `shown` before delivering it:
@@ -100,7 +110,7 @@ Map responses as follows:
 - `known`: finalize the pending card under `Cards/` and append it to the index.
 - `new`: finalize the pending card, append it to the index, and count the shown domain and regions as coverage.
 - `deep`: finalize the pending card and index, then produce exactly one deep research report (see "Deep dive" below). Never interpret `deep`/`深入了解` as anything less than the full in-depth report.
-- `skipped`: delete the pending body, create no formal note, and retain only transparent metadata for the seven-day topic cooldown and domain weighting.
+- `skipped`: delete the pending body, create no formal note, and retain only transparent metadata for the seven-day topic cooldown and domain weighting. If the user skipped because the topic was too obscure, too specialized, or not useful, treat that as feedback on the topic—not evidence that the entire domain is unwanted.
 
 `feedback` performs the card and index writes. Do not recreate those files manually. Feedback is final for that shown card.
 
@@ -137,12 +147,14 @@ Each level requires fresh source verification. For academic, medical, financial,
 
 ## Delivery boundary
 
-Boundary owns topic selection, research, generation, feedback, history, and notes. A scheduler owns timing. Create, change, pause, or resume an automated daily task only when the user explicitly requests it. Let the user choose manual use, daily delivery, or both, plus a fixed or alternating selection mode.
+Boundary owns topic selection, research, generation, feedback, history, and notes. A scheduler owns timing. Create, change, pause, or resume an automated daily task only when the user explicitly requests it. Let the user choose manual use, daily delivery, or both, plus a fixed or alternating selection mode. The normal default is high-value `boundary` mode; use `wander` only when the user explicitly requests random exploration or has explicitly configured `alternate`.
 
 ## Non-goals
 
 - Do not become a daily news or social-media trends digest.
 - Do not optimize selections only for the user's likes.
+- Do not optimize for rarity, shock value, or maximum novelty.
+- Do not force an under-covered domain when it has no important candidate.
 - Do not permanently block a knowledge domain.
 - Do not build political, religious, medical, financial, or personality profiles.
 - Do not upload the learning history or require an external storage service.
