@@ -1,4 +1,4 @@
 interface:
   display_name: "Boundary"
-  short_description: "每天跨出信息茧房，发现、验证并沉淀值得知道的新知识"
-  default_prompt: "使用 $boundary 给我一张今天的知识边界卡。"
+  short_description: "每天发现其他领域中重要、可迁移、值得长期掌握的知识盲区"
+  default_prompt: "使用 $boundary 给我一张今天的高价值知识边界卡。"

@@ -16,7 +16,7 @@ Aim for a 3-5 minute direct read. Do not begin with a quiz.
 [Explain the central fact, mechanism, person, event, or concept in plain language.]
 
 ## 为什么值得知道 / Why it matters
-[Show which common assumption or mental model this improves.]
+[Name the reusable idea or concrete decision this improves, and state one implication for understanding or action. Do not justify the topic only by saying it is rare, surprising, or culturally distant.]
 
 ## 向外连接 / Zoom out
 [Connect it meaningfully to another domain, era, culture, or present-day system.]
@@ -30,6 +30,13 @@ Aim for a 3-5 minute direct read. Do not begin with a quiz.
 
 **下一步 / Next:** 已知道 / 新知识 / 深入了解 / 暂时跳过
 ```
+
+Before delivery, check:
+
+- The topic is worth knowing even if it is not obscure.
+- Its main payload is a concept, mechanism, institution, consensus, or consequential context—not an isolated fact.
+- `Why it matters` gives a concrete, transferable implication.
+- It takes one manageable step beyond demonstrated coverage; do not jump into specialist detail merely to appear novel.
 
 Avoid clickbait, fake quotations, inflated claims, unexplained jargon, and long lists of loosely related facts.
 

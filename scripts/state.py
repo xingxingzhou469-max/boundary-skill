@@ -343,21 +343,34 @@ def recent_skip_domains(history: list[dict[str, Any]]) -> set[str]:
     }
 
 
+def boundary_domain_weights(history: list[dict[str, Any]]) -> dict[str, float]:
+    """Return a mild diversity prior for Boundary-mode domain hints."""
+    coverage = recent_items(history, COVERAGE_DAYS)
+    counts = Counter(item["domains"][0] for item in coverage)
+    skipped = recent_skip_domains(history)
+    weights: dict[str, float] = {}
+    for domain in DOMAINS:
+        # Coverage helps breadth but must not become a quality objective.
+        recent_count = min(counts[domain], 4)
+        weight = 1.0 / (1.0 + 0.15 * recent_count)
+        if domain in skipped:
+            # Skipping one topic is weak evidence about the whole domain.
+            weight *= 0.9
+        weights[domain] = weight
+    return weights
+
+
 def choose_domain(mode: str, history: list[dict[str, Any]], seed: int | None) -> str:
     rng = random.Random(seed)
     if mode == "wander":
         return rng.choice(DOMAINS)
 
-    coverage = recent_items(history, COVERAGE_DAYS)
-    counts = Counter(item["domains"][0] for item in coverage)
-    skipped = recent_skip_domains(history)
-    weights = []
-    for domain in DOMAINS:
-        weight = 1.0 / (1.0 + counts[domain])
-        if domain in skipped:
-            weight *= 0.35
-        weights.append(weight)
-    return rng.choices(DOMAINS, weights=weights, k=1)[0]
+    weights = boundary_domain_weights(history)
+    return rng.choices(
+        DOMAINS,
+        weights=[weights[domain] for domain in DOMAINS],
+        k=1,
+    )[0]
 
 
 def read_sources(path: Path, minimum: int = 2) -> list[dict[str, str]]:
