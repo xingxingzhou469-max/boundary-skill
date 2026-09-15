@@ -19,28 +19,57 @@ Use these 12 stable primary domain IDs. A card may carry additional secondary do
 | `language-communication` | 语言、文字与传播 | Language, writing, and communication |
 | `daily-life-food-materials` | 日常生活、农业、食物与材料 | Daily life, agriculture, food, and materials |
 
+## Selection objective
+
+Boundary mode seeks important ideas just beyond the user's demonstrated coverage, not the most distant or obscure topic available. A good card usually does at least one of the following:
+
+- teaches a field's foundational concept, core mechanism, or broadly supported consensus;
+- explains an institution, system, or historical process that shapes real decisions and society;
+- provides a reusable mental model that transfers across problems;
+- corrects a consequential misconception;
+- explains a meaningful everyday mechanism that improves practical judgment.
+
+A case study, cultural tradition, place, person, or historical episode is appropriate when it makes one of those larger ideas easier to understand. It is not sufficient that the subject is unusual, geographically distant, or rarely discussed.
+
+Familiarity is uncertain unless the user has stated it directly or demonstrated it in the current context or Boundary history. Do not infer it from demographics or stereotypes, and do not inspect unrelated conversations. When familiarity is uncertain, prefer a canonical concept over a niche topic. Aim for one manageable conceptual step beyond the user's current coverage, not a jump into specialist detail.
+
 ## Boundary mode
 
-Choose a domain with low recent coverage, then select a topic with high lasting value. Compare three candidates using these criteria:
+Choose the highest-value candidate that passes the quality gate below. Recent domain coverage is only a mild diversity prior; it must never override topic quality or force equal rotation across all 12 domains.
 
-1. **Unfamiliarity:** likely outside the user's demonstrated coverage; do not infer this from stereotypes. Unfamiliarity is measured against the user, not against the general public: a topic may be canonical inside its discipline and still qualify if the user has never encountered it.
-2. **Importance:** helps explain a consequential mechanism, institution, event, idea, or way of seeing. Foundational knowledge of a field — its central concepts, theorems, mechanisms, institutions, and canonical works — counts as important even when it is well known to practitioners of that field.
-3. **Durability:** remains useful beyond the current news cycle.
-4. **Connection:** creates a meaningful bridge to at least one other domain, era, or culture.
-5. **Evidence:** can be supported by adequate independent, high-quality sources.
+Compare three candidates in this order:
 
-Obscurity is not a goal and never compensates for lack of importance. Do not select a topic merely because it is amusing, obscure, or viral, and do not reject a topic merely because it is well known within its field. A discipline's core concept the user does not know is as legitimate a boundary as any niche curiosity — and often the higher-value choice.
+1. **Importance and transferability:** Will learning this improve understanding, reasoning, or a real decision beyond this one example?
+2. **Field centrality or consensus:** Is it foundational, canonical, widely supported, or central to understanding the field?
+3. **Consequence and relevance:** Does it help explain an important part of society, work, learning, health, technology, culture, or everyday life?
+4. **Durability:** Will it remain useful beyond a news cycle or a single conversation?
+5. **Unfamiliarity:** Is it plausibly outside the user's demonstrated coverage? This is a discovery signal, not a reason to prefer obscurity.
+6. **Connection:** Does it create a genuine bridge to another domain, era, culture, or present-day system?
+7. **Evidence:** Can the central claims be supported by the required independent, high-quality sources? Evidence is a hard gate, not a novelty score.
+
+For each candidate, write a private one-line justification covering what it unlocks, why it may be unfamiliar, and what concrete understanding or judgment it improves. Select the candidate with the strongest value and transferability. Use unfamiliarity and cross-domain distance only to break close ties.
+
+Reject a candidate when:
+
+- its main appeal is that it is rare, amusing, surprising, viral, or culturally distant;
+- it is mostly an isolated number, name, artifact, place, or anecdote with no reusable idea;
+- its importance can be stated only as “most people do not know this”;
+- the card would need specialist detail to make the topic seem substantial;
+- no reliable source supports the central claim;
+- a more foundational or consequential candidate is available.
+
+If no candidate clears the importance floor, do not fill the slot. Pick another domain or generate a new candidate set.
 
 ## Wander mode
 
-Let the script randomly choose the primary domain. Within it, allow a genuinely unexpected topic. Apply only these filters:
+Wander mode is optional random exploration, not the default meaning of Boundary. It may begin with a randomly selected domain or an unexpected connection, but it must still pass a minimum value floor:
 
-- It is factually verifiable.
-- It teaches more than an isolated number or novelty.
-- It is not a recent or semantic repeat.
-- It can be explained responsibly within a short card.
+- it teaches a mechanism, concept, important context, or meaningful human practice;
+- it offers more than an isolated fact or novelty;
+- it can be explained responsibly in a short card;
+- it is factually verifiable and not a recent or semantic repeat.
 
-Wander mode may be whimsical; it may not be careless.
+Randomness chooses where to look, not whether a topic is worth knowing. If a random candidate is merely odd or decorative, reject it and try again.
 
 ## Global perspective
 
