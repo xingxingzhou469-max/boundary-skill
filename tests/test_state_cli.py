@@ -456,6 +456,30 @@ class BoundaryCliTestCase(unittest.TestCase):
         self.assertTrue(outside.is_file())
         self.assertEqual("must remain", outside.read_text(encoding="utf-8"))
 
+    def test_boundary_domain_coverage_is_only_a_soft_prior(self) -> None:
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location("boundary_state", STATE_SCRIPT)
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(module)
+
+        history = [
+            {
+                "domains": ["history-archaeology"],
+                "shown_at": module.now_iso(),
+                "feedback": "new",
+            }
+            for _ in range(30)
+        ]
+        weights = module.boundary_domain_weights(history)
+        self.assertGreater(
+            weights["history-archaeology"],
+            weights["earth-geography"] * 0.5,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
