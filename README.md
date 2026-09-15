@@ -17,9 +17,9 @@ A verified daily knowledge skill for discovering what you did not know to ask.
 
 ---
 
-Boundary 不会继续推荐"更多你已经喜欢的内容"。
+Boundary 不会继续推荐"更多你已经喜欢的内容"。它的目标也不是用小众知识证明自己足够随机。
 
-它每天主动选择一个你大概率没有接触过、但值得知道的主题，查证来源，整理成一张 3～5 分钟可以读完的知识卡。想深入时，它会展开成一份完整、深入但通俗易懂的研究报告。历史、生命科学、金融、建筑、语言、法律、宗教、材料、地理……世界不应该只剩下算法认为你会点击的那一小部分。
+它每天寻找一个你可能还没接触过、但在某个领域重要、可迁移，或者能改变理解框架的主题，查证来源，整理成一张 3～5 分钟可以读完的知识卡。优先选择学科核心概念、广泛支持的共识、可迁移的机制和影响现实生活的制度或知识；只有在这些价值成立时，才用跨领域距离和陌生感来扩大范围。想深入时，它会展开成一份完整、深入但通俗易懂的研究报告。历史、生命科学、金融、建筑、语言、法律、宗教、材料、地理……世界不应该只剩下算法认为你会点击的那一小部分。
 
 ## 为什么需要 Boundary
 
@@ -64,8 +64,10 @@ Boundary 的目标不是增加信息量，而是扩大认知范围：
 
 | 模式 | 它怎样选题 | 适合什么时刻 |
 |---|---|---|
-| 🧭 **边界模式** | 优先进入近期覆盖较少的领域，再选择具有长期价值、跨领域连接和可靠证据的主题 | 想系统扩大知识版图 |
-| 🎲 **漫游模式** | 先随机抽取领域，再寻找其中可验证、有解释价值的意外主题 | 想遇见真正没想过的东西 |
+| 🧭 **边界模式** | 优先选择其他领域的重要核心概念、关键机制、制度或共识；近期覆盖和陌生感只用于保持广度与发现盲区 | 想一点点补齐高价值知识盲区 |
+| 🎲 **漫游模式** | 随机抽取领域，再寻找一个有解释力的意外主题；仍必须通过重要性底线 | 明确想随机探索 |
+
+边界模式不是小众知识生成器。一个你没学过的学科基础概念，通常比一个罕见但没有迁移价值的事实更值得选。只有当一个历史或文化案例能够解释更一般的机制时，它才适合作为卡片主题。
 
 你也可以选择两种模式交替出现。
 
@@ -73,8 +75,8 @@ Boundary 的目标不是增加信息量，而是扩大认知范围：
 
 ```mermaid
 flowchart LR
-    A["选择模式"] --> B["抽取知识领域"]
-    B --> C["比较三个候选主题"]
+    A["选择模式"] --> B["生成领域提示"]
+    B --> C["比较三个候选主题的价值"]
     C --> D["打开并核验来源"]
     D --> E["生成 3～5 分钟知识卡"]
     E --> P["保存完整待确认卡片"]
@@ -101,7 +103,7 @@ flowchart LR
 11. 语言、文字与传播
 12. 日常生活、农业、食物与材料
 
-选题还会主动轮换国家、文明和知识传统，避免长期只围绕中国、欧美或互联网最常见的叙事。
+选题会逐步覆盖不同国家、文明和知识传统，避免长期只围绕中国、欧美或互联网最常见的叙事；但轮换只是为了保持视野宽度，不构成“每个领域都必须强行安排一个冷门主题”的配额。
 
 ## 两个阅读层级
 
@@ -216,20 +218,20 @@ Boundary 借鉴了这些优秀开源项目的思路，并重新组合成一条�
 
 ## English
 
-**Boundary is a verified daily knowledge skill for discovering what you did not know to ask.**
+**Boundary is a verified daily knowledge skill for finding important ideas just beyond what you know.**
 
 Recommendation systems are good at predicting what you will click next. They are much worse at showing you an important idea from a field you have never thought to explore.
 
-Boundary selects one topic, verifies it against reliable sources, and turns it into a direct 3–5 minute knowledge card. When you want more, it expands into one complete, in-depth research report written in plain language.
+Boundary selects one topic, verifies it against reliable sources, and turns it into a direct 3–5 minute knowledge card. It prioritizes foundational, transferable, and consequential ideas; unfamiliarity broadens the search but is not the goal. When you want more, it expands into one complete, in-depth research report written in plain language.
 
 ### Two discovery modes
 
 | Mode | Selection behavior |
 |---|---|
-| 🧭 **Boundary** | Prioritizes under-covered domains, then chooses a durable, important, well-supported topic with cross-domain value |
-| 🎲 **Wander** | Randomly picks a domain, then finds a verifiable and genuinely unexpected topic inside it |
+| 🧭 **Boundary** | Prioritizes important core concepts, mechanisms, institutions, and consensus from other fields; under-covered domains and unfamiliarity only help maintain breadth |
+| 🎲 **Wander** | Randomly picks a domain, then finds an explanatory unexpected topic that still clears the importance floor |
 
-Both modes reject unsupported trivia, semantic repeats, and topics that cannot be verified with at least two independent sources.
+Both modes reject unsupported trivia, semantic repeats, and topics that cannot be verified with at least two independent sources. Boundary mode is not a niche-fact generator: an unfamiliar foundational idea is usually more valuable than a rare fact with no transferable meaning.
 
 ### Two depth levels
 
