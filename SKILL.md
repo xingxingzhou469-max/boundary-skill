@@ -1,11 +1,17 @@
 ---
 name: boundary
-description: Expand a user's knowledge boundary with a verified daily knowledge card focused on important, transferable ideas outside their demonstrated coverage, with optional random wandering only when requested. Use when the user asks for today's boundary, a high-value idea from another field, something worth knowing outside their field, a random unfamiliar topic, help escaping an information bubble, or a deep-dive report about a Boundary card. Also use when the user replies to an active Boundary card with 已知道, 新知识, 深入了解, 暂时跳过, known, new, deep dive, or skip.
+description: Discover important ideas outside a user's usual fields through source-checked knowledge cards and optional deep research. Use for today's boundary, cross-domain learning, escaping an information bubble, or explicit random exploration. Also handle 已知道, 新知识, 深入了解, 暂时跳过, known, new, deep dive, and skip when replying to a Boundary card. Do not use for ordinary factual questions or unrelated uses of the word boundary.
+license: MIT
+compatibility: Requires Python 3.10+, an IANA timezone database, local file and shell access, and an agent able to search the web and open sources.
 ---
 
 # Boundary
 
 Deliver one verified, worthwhile encounter with the wider world. In the default `boundary` mode, optimize first for importance, transferability, and durable understanding; use unfamiliarity to find a real blind spot, and treat novelty as a tie-breaker rather than the goal.
+
+## Choose the delivery environment
+
+This installed skill uses the local CLI for persistent files. For ChatGPT Scheduled without local shell/file access, use the [self-contained task adapter](integrations/chatgpt/README.md), not local setup commands. Both use [the shared quality standard](references/quality-rubric.md); the adapter only changes the host-specific delivery and storage boundary.
 
 ## Selection objective
 
@@ -17,22 +23,24 @@ For every candidate, answer in one sentence: "After learning this, what will the
 
 ## Load only what the task needs
 
+- Read [references/quality-rubric.md](references/quality-rubric.md) before researching or writing; it defines usefulness, evidence review, and depth for both delivery environments.
 - Read [references/domains.md](references/domains.md) before selecting a topic.
+- Use [references/source-map.md](references/source-map.md) when you need reliable starting points; open the relevant underlying material, not just the directory page.
 - Read [references/source-policy.md](references/source-policy.md) before researching or citing.
 - Read [references/output-formats.md](references/output-formats.md) before drafting a card or report.
 - Read [references/storage.md](references/storage.md) when configuring the save folder or writing notes.
 
 ## First run
 
-If Boundary is not configured, ask for only these operational choices in one compact exchange:
+Confirm that Python 3.10+, local file/shell access, web search, and source-opening tools are available. If research tools are missing or blocked, explain the blocker; do not substitute a memory-only card or claim it was verified. Saved cards remain available for review.
 
-1. Output language: Chinese or English. Default to the user's current language.
-2. Selection mode: `boundary` (recommended high-value expansion), `wander` (explicit random exploration), or `alternate`.
-3. The absolute folder where Boundary should save its files. Any folder works; all files are plain Markdown and JSON readable on any device.
+Resolve this skill's directory as `SKILL_DIR`. Run `context` first to locate existing configuration. A missing configuration starts setup; invalid JSON or a missing configured root requires repair, not a fresh initialization.
+
+For a new setup, reuse choices already supplied in the current request. Default to the current language (`zh` or `en`) and `boundary` mode, and briefly state those defaults. Ask only for the missing absolute save folder; combine any genuinely unresolved language or mode choice in that same exchange. Use `wander` for explicitly requested random exploration, or `alternate` if chosen by the user. All files are ordinary Markdown and JSON.
 
 Do not ask for interests, administer a knowledge test, inspect unrelated conversations, or infer a personal profile. Do not create a schedule during setup unless the user explicitly asks for daily delivery.
 
-Resolve this skill's directory as `SKILL_DIR`, then initialize local state:
+Once the destination is chosen, initialize local state:
 
 ```bash
 python3 "$SKILL_DIR/scripts/state.py" init \
@@ -41,7 +49,7 @@ python3 "$SKILL_DIR/scripts/state.py" init \
   --mode boundary
 ```
 
-Use `--config` when the runtime or user requires a non-default config path. Never overwrite an existing configuration without confirmation.
+Use `--config` **before** the subcommand when the runtime or user requires a non-default path, for example `python3 "$SKILL_DIR/scripts/state.py" --config "/absolute/config.json" context`. Pass the same path on subsequent commands. Never overwrite an existing configuration. See [storage and recovery](references/storage.md) when setup fails.
 
 Change the saved language or default mode without rebuilding history:
 
@@ -70,11 +78,11 @@ python3 "$SKILL_DIR/scripts/state.py" configure --root "/new/absolute/path"
    python3 "$SKILL_DIR/scripts/state.py" pick --mode default
    ```
 
-   Treat the returned domain as a mild diversity hint, not a mandate. If it produces no candidate that passes the quality gate, pick again or use another domain.
+   Use `--mode wander` or `--mode boundary` for an explicit one-off choice; `default` uses the saved setting. Do not change the saved preference unless asked. Treat the returned domain as a mild diversity hint, not a mandate. If it produces no candidate that passes the quality gate, pick again or use another domain.
 
 4. Generate 3 candidate topics. Start with the hinted domain, but compare candidates from another domain when that is needed to find a stronger topic. Apply the selected mode's rules from `domains.md`. In `boundary` mode, prefer field-core concepts, widely supported ideas, reusable mechanisms, important institutions, and consequential everyday knowledge. Compare candidates by importance and transferability first, then explicit relevance, durability, unfamiliarity, connection, and novelty. Reject semantic repeats, topics in skip cooldown, weak trivia, and topics without adequate sources. If no candidate clears the importance floor, do not fill the slot; choose a different domain or generate a new set.
 5. Research before writing. Never publish a card from model memory alone. Follow `source-policy.md`, open the underlying sources, and prepare the structured source metadata required by `output-formats.md`.
-6. Draft exactly one direct-reading card using `output-formats.md`. Do not require a guess or quiz. Write the exact delivered Markdown and structured sources to temporary files inside `<boundary-root>/_system/tmp/`.
+6. Draft exactly one direct-reading card using `output-formats.md`. Do not require a guess or quiz. Include a concrete example, a usable takeaway, and where the idea stops applying, following the shared quality standard. Check that the central question is answered, important claims have inline support from opened sources, source organizations are independent, and terminology is explained. Correct the draft before saving; do not show the internal review. Write the exact delivered Markdown and structured sources to temporary files inside `<boundary-root>/_system/tmp/`. The script validates metadata and lifecycle, not factual accuracy; that remains your responsibility.
 7. Persist the complete card as `shown` before delivering it:
 
    ```bash
@@ -93,13 +101,13 @@ python3 "$SKILL_DIR/scripts/state.py" configure --root "/new/absolute/path"
 
    Pass the primary domain first, followed by every applicable secondary domain. Add every applicable geographic or knowledge-tradition region. Reuse the same `topic-key` for the same central explanatory payload even when the title changes. The command saves the full card under `_system/pending/` and returns its stable `id`.
 
-8. End with four responses in the output language: `Known`, `New`, `Deep dive`, `Skip`.
+8. Deliver the saved card, ending with exactly four responses: `已知道 / 新知识 / 深入了解 / 暂时跳过` or `Known / New / Deep dive / Skip`. If saving fails, report the error and do not claim the card was saved or recorded.
 
 Remove the temporary input files after `record` succeeds. If the user asks for another card, repeat the workflow with full source quality. Do not impose a daily hard limit. If the user opens Boundary again on the same day, use `context.active` and `context.today` to mention existing cards and offer review, deep dive, or a new card.
 
 ## Process feedback
 
-Use the stable card `id` returned by `record`:
+Use the stable card `id` returned by `record`, or locate it in `context` after a restart. If multiple cards could match an ambiguous reply, ask which one; never guess an ID. Known/New/Skip apply only to a pending (`shown`) card:
 
 ```bash
 python3 "$SKILL_DIR/scripts/state.py" feedback --id "..." --value new
@@ -112,28 +120,27 @@ Map responses as follows:
 - `deep`: finalize the pending card and index, then produce exactly one deep research report (see "Deep dive" below). Never interpret `deep`/`深入了解` as anything less than the full in-depth report.
 - `skipped`: delete the pending body, create no formal note, and retain only transparent metadata for the seven-day topic cooldown and domain weighting. If the user skipped because the topic was too obscure, too specialized, or not useful, treat that as feedback on the topic—not evidence that the entire domain is unwanted.
 
-`feedback` performs the card and index writes. Do not recreate those files manually. Feedback is final for that shown card.
+`feedback` performs the card and index writes. Do not recreate those files manually. Feedback is final for that shown card. For `deep` feedback already recorded but no report attached, resume the report from `context.pending_reports` without calling `feedback` again. If a report already exists, open it; do not overwrite it. A request to research an already accepted Known/New card is a separate research request and must not rewrite its finalized feedback.
 
 ## Deep dive
 
 `Deep dive`/`深入了解` is the single deepening path, and it goes all the way down. It produces one complete, in-depth research report — there is no intermediate brief and no further "choose your depth" step afterward.
 
-1. Formulate one central research question from the card. If the user's question is already clear, use it; otherwise ask the user to define it before researching. Never expand a card title into a report without a research question.
+1. Use the central research question already stored with the card. A simple `Deep dive` requires no further question or depth choice. If the user explicitly supplies a different question, use it and pass `--question "..."` when attaching the report.
 2. Research fresh for this level, following `source-policy.md`. At least three strong, independent sources are required; use more when the question demands it. Save the exact report Markdown and its structured sources to temporary files.
 3. Write the report using the deep research report format in `output-formats.md`. It must be comprehensive in depth but written in plain, accessible language — like a long-form explainer for a curious reader, not a journal article. It must be readable on its own, without the card.
-4. Attach it:
+4. Review evidence and readability against `output-formats.md`, then attach it:
 
    ```bash
    python3 "$SKILL_DIR/scripts/state.py" deep \
      --id "..." \
-     --question "..." \
      --body "<boundary-root>/_system/tmp/deep-report.md" \
      --sources "<boundary-root>/_system/tmp/deep-report-sources.json"
    ```
 
    This creates `Reports/<slug>-deep-research.md` and links it back to the card. Remove the temporary input files after success.
 
-5. End the report with two choices in the output language: `Known` and `Enough`. A deep dive never spawns an automatic follow-up.
+5. Deliver the report without another action menu. A deep dive never spawns an automatic follow-up. If research is interrupted, keep the accepted card and resume the missing report later; do not invent a placeholder report to complete the workflow.
 
 Each level requires fresh source verification. For academic, medical, financial, legal, and contested subjects, apply the domain-specific rules in `source-policy.md`. Never provide personal diagnosis, individualized legal advice, or direct buy/sell instructions.
 

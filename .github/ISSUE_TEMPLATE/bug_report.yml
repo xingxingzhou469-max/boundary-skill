@@ -1,0 +1,23 @@
+name: Bug report / 故障反馈
+description: Report a reproducible installation, state, or delivery problem.
+title: '[Bug]: '
+body:
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment / 运行环境
+      description: Agent and version, operating system, Python version, and Boundary commit or install date. Do not include private paths or history.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / 复现步骤
+      description: What did you ask or run? What did you expect, and what happened?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Redacted evidence / 脱敏证据
+      description: Paste the error or a small anonymized example. Do not upload your config, complete history, tokens, or personal notes.

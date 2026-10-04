@@ -72,3 +72,37 @@ user's intelligence.
   location; do not guess another folder.
 - The user may move, edit, or delete any file. Treat deletion as intentional
   unless asked to restore it.
+
+## Write guarantees and recovery
+
+The local CLI uses OS file locks around mutations, first for the pointer config
+and then for the resolved Boundary root. Different configs pointing to the same
+root share its write lock. A competing writer fails with a visible busy message;
+retry after the other process finishes. The OS releases locks when a process
+exits. Lock files may remain; their existence alone does not mean a lock is held.
+Do not delete a lock file while a writer may be running.
+
+For init, record, feedback, and deep, the script stages the changed files and
+keeps temporary backups. If a catchable write error occurs, it attempts to restore
+the prior files so the same operation can be retried. If rollback also fails,
+keep the named recovery backups and the exact error; do not initialize over the
+folder or delete artifacts to bypass the error.
+
+This is not a crash-recovery database: a power loss or forced process kill during
+a multi-file update can leave partial changes. Read-only context commands read
+atomic JSON files but do not lock a whole multi-file snapshot. External editors
+and sync programs do not participate in the CLI locks; avoid simultaneous edits
+while a command is writing. Keep normal backups of a valued library.
+
+`context.pending_reports` lists every card with finalized Deep feedback and no
+attached report, including entries older than the recent-history window. Resume
+those reports using their card ID. `deep` defaults to the stored question;
+`--question` is available for an explicit user change.
+
+Source metadata retains optional `accessed_at` and `published_at` dates when
+provided as valid `YYYY-MM-DD` strings. These dates record research provenance;
+they do not prove that the source was opened or that its claims are correct.
+
+These filesystem guarantees apply only to the local CLI. The
+[ChatGPT task adapter](../integrations/chatgpt/README.md) delivers in a conversation
+and makes no equivalent persistence or cooldown guarantee.

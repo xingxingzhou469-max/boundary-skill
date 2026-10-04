@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Sea Ice",
+    "url": "https://science.nasa.gov/earth/earth-observatory/sea-ice/",
+    "kind": "authoritative",
+    "publisher": "NASA Earth Observatory",
+    "supports": "Sea ice reflects more sunlight than open ocean; exposed water absorbs sunlight that can warm the upper ocean and reinforce melt. The page also explains the seasonal sunlight cycle and sea ice's insulating role.",
+    "accessed_at": "2026-10-05"
+  },
+  {
+    "title": "Why Sea Ice Matters",
+    "url": "https://nsidc.org/learn/parts-cryosphere/sea-ice/why-sea-ice-matters",
+    "kind": "authoritative",
+    "publisher": "National Snow and Ice Data Center",
+    "supports": "Bright sea ice has higher albedo than surrounding ocean; when warming melts ice, the darker surface absorbs more heat and can amplify further melting.",
+    "accessed_at": "2026-10-05"
+  },
+  {
+    "title": "Chapter 10: Linking Global to Regional Climate Change",
+    "url": "https://www.ipcc.ch/report/ar6/wg1/chapter/chapter-10/",
+    "kind": "review",
+    "publisher": "Intergovernmental Panel on Climate Change",
+    "supports": "The IPCC AR6 WGI assessment identifies ice-albedo alongside lapse-rate, Planck, and cloud feedbacks among mechanisms associated with Arctic amplification.",
+    "accessed_at": "2026-10-05"
+  }
+]

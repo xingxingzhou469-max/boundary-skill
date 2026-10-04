@@ -1,0 +1,16 @@
+name: Feature request / 改进建议
+description: Suggest an improvement grounded in a learning or maintenance need.
+title: '[Feature]: '
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Problem and desired outcome / 问题与期望结果
+      description: What is difficult today? Describe the result you need before proposing an implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example / 使用场景
+      description: A concrete prompt or workflow helps keep Boundary focused.

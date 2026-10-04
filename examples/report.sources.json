@@ -1,0 +1,42 @@
+[
+  {
+    "title": "Sea Ice",
+    "url": "https://science.nasa.gov/earth/earth-observatory/sea-ice/",
+    "kind": "authoritative",
+    "publisher": "NASA Earth Observatory",
+    "supports": "Explains the ice-ocean reflectivity contrast and reinforcing melt cycle, seasonal context and insulating role of sea ice, and that floating sea ice melt does not directly raise sea level.",
+    "accessed_at": "2026-10-05"
+  },
+  {
+    "title": "Why Sea Ice Matters",
+    "url": "https://nsidc.org/learn/parts-cryosphere/sea-ice/why-sea-ice-matters",
+    "kind": "authoritative",
+    "publisher": "National Snow and Ice Data Center",
+    "supports": "Explains why bright sea ice and dark open water absorb different amounts of solar energy and how that contrast can amplify melt.",
+    "accessed_at": "2026-10-05"
+  },
+  {
+    "title": "Chapter 10: Linking Global to Regional Climate Change",
+    "url": "https://www.ipcc.ch/report/ar6/wg1/chapter/chapter-10/",
+    "kind": "review",
+    "publisher": "Intergovernmental Panel on Climate Change",
+    "supports": "Assesses ice-albedo alongside other mechanisms associated with Arctic amplification.",
+    "accessed_at": "2026-10-05"
+  },
+  {
+    "title": "Arctic and Antarctic Sea Ice Change: Contrasts, Commonalities, and Causes",
+    "url": "https://doi.org/10.1146/annurev-marine-010816-060610",
+    "kind": "review",
+    "publisher": "Annual Reviews",
+    "supports": "Synthesizes differences between Arctic and Antarctic sea ice, the role of geography and natural variability, coupled atmosphere-ice-ocean processes, and remaining model biases.",
+    "accessed_at": "2026-10-05"
+  },
+  {
+    "title": "Evidence for ice-ocean albedo feedback in the Arctic Ocean shifting to a seasonal ice zone",
+    "url": "https://doi.org/10.1038/s41598-017-08467-z",
+    "kind": "academic",
+    "publisher": "Scientific Reports",
+    "supports": "Uses 1979-2014 satellite observations and a simplified upper-ocean model in the Pacific Arctic; finds early-season ice divergence can trigger albedo feedback that amplifies summer retreat, while noting the regional model scope and other contributing processes.",
+    "accessed_at": "2026-10-05"
+  }
+]
