@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-labelledby="title desc">
+  <title id="title">Boundary — discover beyond the familiar</title>
+  <desc id="desc">A path leads from a familiar circle to a wider constellation of ideas. Discover a useful question, verify its evidence, and connect it to a wider world.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#12242e"/><stop offset="1" stop-color="#0a151c"/></linearGradient>
+    <linearGradient id="line"><stop stop-color="#8ea3af"/><stop offset="0.55" stop-color="#f5b563"/><stop offset="1" stop-color="#78d1bd"/></linearGradient>
+  </defs>
+  <rect width="1200" height="380" rx="20" fill="url(#bg)"/>
+  <g fill="none" stroke="#314651" stroke-width="1">
+    <circle cx="925" cy="193" r="124" stroke-dasharray="4 8"/>
+    <circle cx="925" cy="193" r="173" opacity=".5"/>
+    <circle cx="824" cy="194" r="61"/>
+    <path d="M913 99 L1025 164 L982 282 L861 290 M1025 164 L1075 96 M1025 164 L1112 251 M982 282 L1112 251 M913 99 L937 32"/>
+  </g>
+  <path d="M798 219 C840 168 875 240 917 193 S983 120 1025 164" fill="none" stroke="url(#line)" stroke-width="3"/>
+  <g fill="#8ea3af"><circle cx="798" cy="219" r="5"/><circle cx="824" cy="179" r="4"/><circle cx="850" cy="211" r="4"/></g>
+  <g fill="#78d1bd"><circle cx="1025" cy="164" r="8"/><circle cx="913" cy="99" r="5"/><circle cx="982" cy="282" r="5"/><circle cx="1075" cy="96" r="4"/><circle cx="1112" cy="251" r="4"/><circle cx="861" cy="290" r="4"/><circle cx="937" cy="32" r="3"/></g>
+  <circle cx="917" cy="193" r="8" fill="#f5b563"/>
+  <circle cx="917" cy="193" r="17" fill="none" stroke="#f5b563" opacity=".4"/>
+  <text x="62" y="76" fill="#f5b563" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" letter-spacing="3">A SMALL STEP INTO A WIDER WORLD</text>
+  <text x="58" y="162" fill="#f4f2eb" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="700" letter-spacing="-3">Boundary</text>
+  <text x="62" y="208" fill="#c1ccd1" font-family="Arial, Helvetica, sans-serif" font-size="21">Important ideas, just beyond the familiar.</text>
+  <path d="M62 256 H666" stroke="#314651"/>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="15">
+    <text x="62" y="297" fill="#f5b563">01</text><text x="91" y="297" fill="#e0e7e9">Discover</text>
+    <text x="262" y="297" fill="#f5b563">02</text><text x="291" y="297" fill="#e0e7e9">Verify</text>
+    <text x="462" y="297" fill="#f5b563">03</text><text x="491" y="297" fill="#e0e7e9">Connect</text>
+  </g>
+  <text x="785" y="340" fill="#9cb0ba" font-family="Arial, Helvetica, sans-serif" font-size="12" letter-spacing="1">ONE QUESTION. MANY CONNECTIONS.</text>
+</svg>

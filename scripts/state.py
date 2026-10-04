@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import errno
 import json
 import os
 import random
@@ -13,10 +14,12 @@ import sys
 import tempfile
 import unicodedata
 from collections import Counter
-from datetime import datetime, timedelta, timezone
+from contextlib import contextmanager
+from datetime import date, datetime, timedelta, timezone
 from difflib import SequenceMatcher
+from functools import wraps
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 from urllib.parse import urlparse
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -151,6 +154,178 @@ def atomic_json_write(path: Path, data: dict[str, Any]) -> None:
     atomic_text_write(path, serialized)
 
 
+def atomic_write_batch(writes: dict[Path, str | None]) -> None:
+    """Replace a small set of files together, restoring prior files on I/O errors."""
+    prepared: list[dict[str, Any]] = []
+    applied: list[dict[str, Any]] = []
+    try:
+        for path, content in writes.items():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            if path.is_symlink():
+                raise SystemExit(f"Refusing to replace a Boundary output symlink: {path}")
+            item: dict[str, Any] = {
+                "path": path,
+                "content": content,
+                "existed": path.exists(),
+                "stage": None,
+                "backup": None,
+            }
+            prepared.append(item)
+
+            if item["existed"]:
+                if not path.is_file():
+                    raise SystemExit(f"Boundary output is not a regular file: {path}")
+                backup_fd, backup_name = tempfile.mkstemp(
+                    prefix=f".{path.name}.backup.", dir=path.parent
+                )
+                item["backup"] = Path(backup_name)
+                with os.fdopen(backup_fd, "wb") as handle:
+                    handle.write(path.read_bytes())
+
+            if content is not None:
+                stage_fd, stage_name = tempfile.mkstemp(
+                    prefix=f".{path.name}.stage.", dir=path.parent
+                )
+                item["stage"] = Path(stage_name)
+                with os.fdopen(stage_fd, "w", encoding="utf-8") as handle:
+                    handle.write(content)
+
+        for item in prepared:
+            path = item["path"]
+            content = item["content"]
+            if content is None:
+                path.unlink(missing_ok=True)
+            else:
+                os.replace(item["stage"], path)
+                item["stage"] = None
+            applied.append(item)
+    except BaseException as exc:
+        rollback_errors: list[tuple[Path, OSError]] = []
+        for item in reversed(applied):
+            path = item["path"]
+            backup = item["backup"]
+            try:
+                if backup is not None:
+                    os.replace(backup, path)
+                    item["backup"] = None
+                else:
+                    path.unlink(missing_ok=True)
+            except OSError as rollback_error:
+                rollback_errors.append((path, rollback_error))
+
+        for item in prepared:
+            stage = item["stage"]
+            if stage is not None:
+                try:
+                    stage.unlink(missing_ok=True)
+                except OSError:
+                    pass
+
+        if rollback_errors:
+            details = "; ".join(
+                f"{path}: {error}" for path, error in rollback_errors
+            )
+            retained = [
+                str(item["backup"])
+                for item in prepared
+                if item["backup"] is not None and item["backup"].exists()
+            ]
+            backup_note = (
+                " Recovery backups: " + ", ".join(retained)
+                if retained
+                else " No recovery backup remains for the affected new files."
+            )
+            raise SystemExit(
+                f"Boundary write failed ({exc}); rollback also failed for {details}.{backup_note}"
+            ) from exc
+
+        for item in prepared:
+            backup = item["backup"]
+            if backup is not None:
+                try:
+                    backup.unlink(missing_ok=True)
+                except OSError:
+                    pass
+        if isinstance(exc, (KeyboardInterrupt, SystemExit)):
+            raise
+        if isinstance(exc, OSError):
+            raise SystemExit(f"Boundary write failed; prior files were restored: {exc}") from exc
+        raise
+
+    for item in prepared:
+        backup = item["backup"]
+        if backup is not None:
+            try:
+                backup.unlink(missing_ok=True)
+            except OSError:
+                pass
+
+
+@contextmanager
+def exclusive_file_lock(path: Path, *, create_parent: bool = True) -> Iterator[None]:
+    """Take a fail-fast OS lock that is released automatically when the process exits."""
+    path = path.expanduser().resolve()
+    if create_parent:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    elif not path.parent.is_dir():
+        raise SystemExit(f"Boundary root is missing or moved: {path.parent.parent}")
+    with path.open("a+b") as handle:
+        if os.name == "nt":
+            import msvcrt
+
+            handle.seek(0, os.SEEK_END)
+            if handle.tell() == 0:
+                handle.write(b"\0")
+                handle.flush()
+            handle.seek(0)
+            try:
+                msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+            except OSError as exc:
+                if exc.errno not in {errno.EACCES, errno.EAGAIN, errno.EDEADLK}:
+                    raise
+                raise SystemExit(f"Boundary is busy; retry shortly (lock: {path})") from exc
+            try:
+                yield
+            finally:
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+
+            try:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except OSError as exc:
+                if exc.errno not in {errno.EACCES, errno.EAGAIN, errno.EDEADLK}:
+                    raise
+                raise SystemExit(f"Boundary is busy; retry shortly (lock: {path})") from exc
+            try:
+                yield
+            finally:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+def config_lock_path(path: Path) -> Path:
+    resolved = path.expanduser().resolve()
+    return resolved.with_name(f".{resolved.name}.lock")
+
+
+def validate_init_config_location(config: Path, root: Path) -> None:
+    resolved_root = root.expanduser().resolve()
+    resolved_config = config.expanduser().resolve()
+    try:
+        relative = resolved_config.relative_to(resolved_root)
+    except ValueError:
+        return
+    if (
+        not relative.parts
+        or relative.as_posix().casefold() == "index.md"
+        or relative.parts[0].casefold() in {"cards", "reports", "_system"}
+    ):
+        raise SystemExit(
+            f"Configuration cannot be stored in a managed Boundary path: {resolved_config}"
+        )
+
+
 def load_json(path: Path) -> dict[str, Any]:
     try:
         with path.open(encoding="utf-8") as handle:
@@ -246,6 +421,9 @@ def validate_entry(item: Any, path: Path) -> None:
 
 def load_state(config: dict[str, Any]) -> tuple[Path, dict[str, Any]]:
     path = state_path(config)
+    normalized = relative_to_root(Path(config["root"]), path)
+    if not normalized.startswith("_system/"):
+        raise SystemExit(f"Boundary state must stay under _system/: {path}")
     state = load_json(path)
     if state.get("version") != STATE_VERSION:
         raise SystemExit(
@@ -287,6 +465,43 @@ def relative_to_root(root: Path, path: Path) -> str:
         return resolved.relative_to(resolved_root).as_posix()
     except ValueError as exc:
         raise SystemExit(f"Boundary artifact must stay inside {resolved_root}: {resolved}") from exc
+
+
+def root_lock_path(root: Path) -> Path:
+    resolved_root = root.expanduser().resolve()
+    path = resolved_root / "_system" / ".write.lock"
+    normalized = relative_to_root(resolved_root, path)
+    if not normalized.startswith("_system/"):
+        raise SystemExit(f"Boundary system directory must stay inside {resolved_root}")
+    return path
+
+
+def lock_state_mutation(*, root_from_args: bool = False, root_lock: bool = True):
+    def decorate(command):
+        @wraps(command)
+        def wrapped(args):
+            cfg_path = config_path(args).expanduser().resolve()
+            root = Path(args.root).expanduser().resolve() if root_from_args else None
+            if root_from_args:
+                validate_init_config_location(cfg_path, root)
+            with exclusive_file_lock(config_lock_path(cfg_path)):
+                if root_from_args:
+                    if cfg_path.exists():
+                        return command(args)
+                else:
+                    if not root_lock:
+                        return command(args)
+                    _, config = load_config(args)
+                    load_state(config)
+                    root = Path(config["root"]).expanduser().resolve()
+                with exclusive_file_lock(
+                    root_lock_path(root), create_parent=root_from_args
+                ):
+                    return command(args)
+
+        return wrapped
+
+    return decorate
 
 
 def stored_artifact_path(root: Path, relative: Any, required_prefix: str) -> Path:
@@ -387,15 +602,31 @@ def read_sources(path: Path, minimum: int = 2) -> list[dict[str, str]]:
     urls: set[str] = set()
     publishers: set[str] = set()
     required = {"title", "url", "kind", "publisher", "supports"}
+    optional_dates = {"accessed_at", "published_at"}
     for index, raw in enumerate(value, start=1):
         if not isinstance(raw, dict):
             raise SystemExit(f"Source {index} must be a JSON object")
         missing = required - raw.keys()
         if missing:
             raise SystemExit(f"Source {index} is missing: {', '.join(sorted(missing))}")
-        source = {key: str(raw[key]).strip() for key in required}
+        if any(not isinstance(raw[key], str) for key in required):
+            raise SystemExit(f"Source {index} required fields must be strings")
+        source = {key: raw[key].strip() for key in required}
         if any(not source[key] for key in required):
             raise SystemExit(f"Source {index} contains an empty required field")
+        for key in optional_dates & raw.keys():
+            value = raw[key]
+            if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+                raise SystemExit(f"Source {index} {key} must be a real date in YYYY-MM-DD format")
+            try:
+                parsed_date = date.fromisoformat(value)
+            except ValueError as exc:
+                raise SystemExit(
+                    f"Source {index} {key} must be a real date in YYYY-MM-DD format"
+                ) from exc
+            if parsed_date.isoformat() != value:
+                raise SystemExit(f"Source {index} {key} must be a real date in YYYY-MM-DD format")
+            source[key] = value
         parsed = urlparse(source["url"])
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
             raise SystemExit(f"Source {index} has an invalid URL: {source['url']}")
@@ -491,6 +722,7 @@ def find_entry(state: dict[str, Any], identifier: str) -> dict[str, Any]:
     return match
 
 
+@lock_state_mutation(root_from_args=True)
 def cmd_init(args: argparse.Namespace) -> None:
     cfg_path = config_path(args)
     if cfg_path.exists():
@@ -505,7 +737,12 @@ def cmd_init(args: argparse.Namespace) -> None:
     existing_state = root / "_system" / "state.json"
     if existing_state.exists():
         raise SystemExit(f"Boundary state already exists: {existing_state}")
-    for directory in ("Cards", "Reports", "_system/pending", "_system/tmp"):
+    directories = ("Cards", "Reports", "_system/pending", "_system/tmp")
+    for directory in directories:
+        normalized = relative_to_root(root, root / directory / ".boundary-path-check")
+        if not normalized.startswith(directory + "/"):
+            raise SystemExit(f"Boundary directory must stay under {directory}: {root / directory}")
+    for directory in directories:
         (root / directory).mkdir(parents=True, exist_ok=True)
 
     created = now_iso()
@@ -519,11 +756,15 @@ def cmd_init(args: argparse.Namespace) -> None:
         "created_at": created,
     }
     state = {"version": STATE_VERSION, "created_at": created, "history": []}
-    atomic_json_write(cfg_path, config)
-    atomic_json_write(existing_state, state)
     index_file = index_path(config)
+    relative_to_root(root, index_file)
+    writes = {
+        existing_state: json.dumps(state, ensure_ascii=False, indent=2) + "\n",
+    }
     if not index_file.exists():
-        atomic_text_write(index_file, initial_index(args.language))
+        writes[index_file] = initial_index(args.language)
+    writes[cfg_path] = json.dumps(config, ensure_ascii=False, indent=2) + "\n"
+    atomic_write_batch(writes)
     print(json.dumps({"config": str(cfg_path), "root": str(root)}, ensure_ascii=False))
 
 
@@ -551,6 +792,9 @@ def cmd_context(args: argparse.Namespace) -> None:
         "domain_counts": {domain: domain_counts[domain] for domain in DOMAINS},
         "region_counts": dict(sorted(region_counts.items())),
         "active": [item for item in history if item["feedback"] == "shown"],
+        "pending_reports": [
+            item for item in history if item["feedback"] == "deep" and item["report"] is None
+        ],
         "today": [item for item in history if shown_local_date(item) == today],
         "recent": history[-args.limit :],
     }
@@ -565,6 +809,7 @@ def cmd_pick(args: argparse.Namespace) -> None:
     print(json.dumps({"mode": mode, "domain": domain}, ensure_ascii=False))
 
 
+@lock_state_mutation()
 def cmd_record(args: argparse.Namespace) -> None:
     _, config = load_config(args)
     path, state = load_state(config)
@@ -592,6 +837,9 @@ def cmd_record(args: argparse.Namespace) -> None:
     instant = datetime.now(timezone.utc)
     identifier = f"{instant.strftime('%Y%m%dT%H%M%S%fZ')}-{slug}"
     draft_path = root / "_system" / "pending" / f"{identifier}.md"
+    draft_relative = relative_to_root(root, draft_path)
+    if not draft_relative.startswith("_system/pending/"):
+        raise SystemExit(f"Boundary pending card must stay under _system/pending/: {draft_path}")
     entry = {
         "id": identifier,
         "title": args.title.strip(),
@@ -605,16 +853,21 @@ def cmd_record(args: argparse.Namespace) -> None:
         "shown_at": now_iso(),
         "feedback": "shown",
         "sources": sources,
-        "draft": relative_to_root(root, draft_path),
+        "draft": draft_relative,
         "note": None,
         "report": None,
     }
-    atomic_text_write(draft_path, body + "\n")
     state["history"].append(entry)
-    atomic_json_write(path, state)
+    atomic_write_batch(
+        {
+            draft_path: body + "\n",
+            path: json.dumps(state, ensure_ascii=False, indent=2) + "\n",
+        }
+    )
     print(json.dumps(entry, ensure_ascii=False, indent=2))
 
 
+@lock_state_mutation(root_lock=False)
 def cmd_configure(args: argparse.Namespace) -> None:
     path, config = read_config(args)
     changed = False
@@ -633,10 +886,7 @@ def cmd_configure(args: argparse.Namespace) -> None:
         changed = True
     if args.root:
         new_root = Path(args.root).expanduser().resolve()
-        new_state = new_root / "_system" / "state.json"
-        state = load_json(new_state)
-        if state.get("version") != STATE_VERSION:
-            raise SystemExit(f"New Boundary root does not contain v{STATE_VERSION} state: {new_state}")
+        load_state({"root": str(new_root)})
         config["root"] = str(new_root)
         changed = True
     if not changed:
@@ -647,6 +897,7 @@ def cmd_configure(args: argparse.Namespace) -> None:
     print(json.dumps(config, ensure_ascii=False, indent=2))
 
 
+@lock_state_mutation()
 def cmd_feedback(args: argparse.Namespace) -> None:
     _, config = load_config(args)
     path, state = load_state(config)
@@ -665,32 +916,45 @@ def cmd_feedback(args: argparse.Namespace) -> None:
 
     if args.value == "skipped":
         entry.update(updated)
-        atomic_json_write(path, state)
-        draft_path.unlink()
+        atomic_write_batch(
+            {
+                path: json.dumps(state, ensure_ascii=False, indent=2) + "\n",
+                draft_path: None,
+            }
+        )
         print(json.dumps(entry, ensure_ascii=False, indent=2))
         return
 
     index_file = index_path(config)
+    relative_to_root(root, index_file)
     try:
         index_text = index_file.read_text(encoding="utf-8")
     except FileNotFoundError as exc:
         raise SystemExit(f"Index file is missing: {index_file}") from exc
     note_path = root / "Cards" / f"{entry['slug']}.md"
+    note_relative = relative_to_root(root, note_path)
+    if not note_relative.startswith("Cards/"):
+        raise SystemExit(f"Boundary card must stay under Cards/: {note_path}")
     if note_path.exists():
         raise SystemExit(f"Card note already exists: {note_path}")
     body = draft_path.read_text(encoding="utf-8").strip()
-    updated["note"] = relative_to_root(root, note_path)
+    updated["note"] = note_relative
     note_text = card_frontmatter(updated) + body + "\n"
     index_text = add_index_entry(index_text, updated)
 
-    atomic_text_write(note_path, note_text)
-    atomic_text_write(index_file, index_text)
     entry.update(updated)
-    atomic_json_write(path, state)
-    draft_path.unlink()
+    atomic_write_batch(
+        {
+            note_path: note_text,
+            index_file: index_text,
+            path: json.dumps(state, ensure_ascii=False, indent=2) + "\n",
+            draft_path: None,
+        }
+    )
     print(json.dumps(entry, ensure_ascii=False, indent=2))
 
 
+@lock_state_mutation()
 def cmd_deep(args: argparse.Namespace) -> None:
     _, config = load_config(args)
     path, state = load_state(config)
@@ -711,17 +975,23 @@ def cmd_deep(args: argparse.Namespace) -> None:
     if not body:
         raise SystemExit("Deep research report body cannot be empty")
     sources = read_sources(Path(args.sources).expanduser().resolve(), minimum=3)
+    question = (args.question or entry["question"]).strip()
+    if not question:
+        raise SystemExit("Deep research question cannot be empty")
 
     card_path = stored_artifact_path(root, entry["note"], "Cards/")
     if not card_path.is_file():
         raise SystemExit(f"Originating card note is missing: {card_path}")
     report_path = root / "Reports" / f"{entry['slug']}-deep-research.md"
+    report_relative = relative_to_root(root, report_path)
+    if not report_relative.startswith("Reports/"):
+        raise SystemExit(f"Deep research report must stay under Reports/: {report_path}")
     if report_path.exists():
         raise SystemExit(f"Deep research report file already exists: {report_path}")
 
     origin_link = f"[{entry['title']}](../Cards/{entry['slug']}.md)"
     report_text = (
-        deep_frontmatter(entry, args.question.strip(), sources)
+        deep_frontmatter(entry, question, sources)
         + f"**Originating card:** {origin_link}\n\n"
         + body
         + "\n"
@@ -734,13 +1004,17 @@ def cmd_deep(args: argparse.Namespace) -> None:
         card_text += f"\n\n## {heading}\n\n- {report_link}\n"
 
     updated = copy.deepcopy(entry)
-    updated["report"] = relative_to_root(root, report_path)
-    updated["report_question"] = args.question.strip()
+    updated["report"] = report_relative
+    updated["report_question"] = question
     updated["report_sources"] = sources
-    atomic_text_write(report_path, report_text)
-    atomic_text_write(card_path, card_text)
     entry.update(updated)
-    atomic_json_write(path, state)
+    atomic_write_batch(
+        {
+            report_path: report_text,
+            card_path: card_text,
+            path: json.dumps(state, ensure_ascii=False, indent=2) + "\n",
+        }
+    )
     print(json.dumps(entry, ensure_ascii=False, indent=2))
 
 
@@ -799,7 +1073,7 @@ def parser() -> argparse.ArgumentParser:
         help="Attach a verified deep research report to a deep card",
     )
     deep.add_argument("--id", required=True)
-    deep.add_argument("--question", required=True)
+    deep.add_argument("--question")
     deep.add_argument("--body", required=True, help="UTF-8 Markdown deep research report")
     deep.add_argument("--sources", required=True, help="JSON file containing at least three sources")
     deep.set_defaults(func=cmd_deep)
@@ -807,6 +1081,10 @@ def parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
     args = parser().parse_args()
     args.func(args)
     return 0

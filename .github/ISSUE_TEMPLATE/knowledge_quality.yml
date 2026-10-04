@@ -1,0 +1,23 @@
+name: Knowledge quality / 内容质量
+description: Report an unsupported claim, weak topic, misleading citation, or repeated card.
+title: '[Quality]: '
+body:
+  - type: textarea
+    id: issue
+    attributes:
+      label: What went wrong? / 具体问题
+      description: Quote only the relevant claim or summarize the selection problem. Remove personal information.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sources and context / 来源与背景
+      description: Include source URLs and explain whether the problem is evidence, interpretation, novelty, or usefulness.
+    validations:
+      required: true
+  - type: input
+    id: host
+    attributes:
+      label: Agent, model, and Boundary version / 环境与版本
+      description: These help distinguish skill instructions from host behavior.

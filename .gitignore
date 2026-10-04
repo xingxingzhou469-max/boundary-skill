@@ -16,3 +16,6 @@ __pycache__/
 _system/
 Cards/
 Reports/
+
+# Opt-in demo output
+/boundary-demo/
