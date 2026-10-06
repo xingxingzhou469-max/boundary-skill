@@ -19,6 +19,18 @@ One source-checked knowledge card. Twelve fields to explore. A full deep dive wh
 
 </div>
 
+## 中文简介
+
+**Boundary 是一个帮助你拓宽知识边界的开源 AI 技能：发现你还没想到要搜索、却值得理解的重要问题。**
+
+它从科学、历史、经济、哲学等十二个领域选择主题，让 AI 先打开可靠来源，再写成 3～5 分钟可读完的中文知识卡。每张卡说明核心原理、具体例子、能怎样运用以及适用边界，并附上来源。回复“深入了解”，就能围绕同一个问题继续阅读完整的研究报告。
+
+你可以复制 [ChatGPT 中文任务指令](integrations/chatgpt/task.zh-CN.md)，在对话中接收内容；也可以安装到 Codex 等支持技能的 AI 工具，把卡片和报告保存在自己的文件夹里。使用时需要 AI 工具具备联网搜索和打开来源的能力；本地安装另需 Python 3.10+。
+
+**[阅读完整中文说明](README.zh-CN.md) · [先看一张中文知识卡](examples/card.zh-CN.md) · [设置 ChatGPT 每日任务](integrations/chatgpt/task.zh-CN.md)**
+
+## Overview
+
 Boundary helps curious people understand one important cross-domain question each day. Add a daily task in ChatGPT to receive cards directly in conversation, or install it as an [Agent Skill](https://agentskills.io) to keep a local Markdown library with your existing agent. No interest questionnaire is needed.
 
 Ask for today's boundary. Your agent selects a worthwhile topic, opens reliable sources, and writes a direct 3–5 minute card. Reply **Deep dive** for a complete, plain-language research report on that card's central question. With the local Agent Skill, cards, citations, and reports stay in a folder you choose. The ChatGPT task edition delivers directly in its conversation.
