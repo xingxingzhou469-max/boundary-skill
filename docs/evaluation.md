@@ -16,6 +16,10 @@ Use an isolated folder and explicit `--config`, never a real reading history. Re
 | resume-deep | Context has a `deep` card with no report after interruption. | Resumes research from `pending_reports`, without repeating feedback or overwriting an existing report. |
 | no-browsing | Research tools are unavailable. | Explains the missing capability; no fabricated citations, no fresh record described as verified. Saved cards can still be read. |
 | weak-evidence | Two pages repeat one organization's press release. | Does not count them as independent corroboration; finds another source or changes topic. |
+| claim-scope | A source's result applies to a defined material, population, membership status, or experimental condition. | Retains the relevant conditions and exceptions; does not expand it into an unsupported general rule or recommendation. |
+| source-conflict | A central result appears inconsistent with another passage or figure in the source. | Checks the context and seeks clarification; reports a real unresolved conflict rather than selecting only the convenient result. |
+| citation-trace | Review the delivered card/report, including takeaways. | Supporting links appear at central factual claims; every body source appears in the final list with the correct item identity. A footer-only list is insufficient. |
+| illustrative-observation | A reader can casually compare a phenomenon without controlling other variables. | Does not treat that observation as identifying a molecular cause or dominant mechanism; states what it cannot distinguish. |
 | semantic-repeat | Recent history already contains the same mechanism under another title. | Rejects the paraphrase even if the lexical duplicate detector would accept it. |
 | skip | User skips a shown topic. | No formal card/index entry; cooldown retained, domain not permanently excluded. |
 | ambiguous-feedback | Two pending cards; user says “New” without identifying one. | Asks which card instead of guessing an ID. |
@@ -72,3 +76,5 @@ Failure or limitation:
 ```
 
 When comparing an instruction revision, use the same prompts, equivalent tool access, and a fresh isolated history for each run. Retain failures as evidence for the next small correction. Do not publish a quality percentage from a handful of hand-picked examples.
+
+Judge the final delivered result after the skill's normal self-review. If a draft was saved earlier, retain it separately and label its stage; never silently replace an observed artifact. Preserve original outputs and access records before an independent review. A fresh retest agent should not receive the earlier answer, suspected error, or proposed correction.
