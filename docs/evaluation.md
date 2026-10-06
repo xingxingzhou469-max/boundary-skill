@@ -2,6 +2,8 @@
 
 The Python suite verifies local lifecycle and metadata invariants. This document covers the separate question: **does an agent using the skill behave usefully and honestly?** It is a repeatable protocol, not a claim that every host or model has passed.
 
+For observed runs and limitations, see the [2026-10-06 content-review results](evaluation-results.md).
+
 Use an isolated folder and explicit `--config`, never a real reading history. Record the Boundary commit, host/model, date, prompt, opened source URLs, observed result, and PASS / FAIL / BLOCKED. Keep private transcripts local; a redacted result is enough for a PR. Repeat relevant cases after changing instructions.
 
 ## Scenarios

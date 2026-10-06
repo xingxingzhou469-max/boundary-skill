@@ -35,7 +35,7 @@
 |---|---|
 | 已知道 / 新知识 | 简短确认，不自动追加内容。 |
 | 暂时跳过 | 简短确认；在可见近期记录中避开相同想法，不屏蔽整个领域。 |
-| 深入了解 | 围绕这张卡的核心问题交付完整研究报告。先前选过“新知识”或“已知道”也可以继续深入。 |
+| 深入了解 | 围绕这张卡的核心问题交付完整研究报告。先前选过“已知道”“新知识”或“暂时跳过”也可以继续深入。 |
 | 针对卡片提问 | 直接解释你的问题，不自动生成另一张卡。 |
 
 深入较早的卡片时，写“深入了解：卡片标题”即可；只有对象确实不明确时才询问。第二天的定时执行仍然送一张新卡，不把某次深入请求变成每天的长文任务。卡片在对话中交付，不承诺已写入电脑或建立永久学习记录。
@@ -58,7 +58,7 @@
 
 For an existing task, replace only its saved instructions with [the English runtime text](instructions.en.txt), preserving its schedule. For an unscheduled preview, paste the runtime text into chat and append “Give me a card now; do not create or change a task.”
 
-Known / New / Skip acknowledges feedback briefly. Deep dive works even after earlier feedback; use a title to identify an older card. An ordinary follow-up answers your question. The next scheduled run always returns to one new card. No local files or permanent history are promised.
+Known / New / Skip acknowledges feedback briefly. Deep dive works even after any of those replies; use a title to identify an older card. An ordinary follow-up answers your question. The next scheduled run always returns to one new card. No local files or permanent history are promised.
 
 ## Official support, sharing, and history
 
@@ -74,6 +74,7 @@ For eligible accounts, an official shared task link can make adding a copy easie
 
 - CI checks that setup and runtime outputs match their shared sources.
 - [Evaluation cases](../../docs/evaluation.md) cover setup, feedback, later deep dives, repeat avoidance, missing tools, and unattended execution. Ordinary agent replay does not prove ChatGPT account behavior.
+- The [2026-10-06 content review](../../docs/evaluation-results.md) records seven native Agent trials with real research tools, independent source review, and unresolved precision issues.
 - **A real ChatGPT scheduled run and continuous multi-day delivery remain unverified.** Check actual creation, tools, first scheduled output, and next run before treating the integration as accepted.
 - A copied task is a snapshot. Update its runtime instructions deliberately when adopting a new Boundary version.
 
