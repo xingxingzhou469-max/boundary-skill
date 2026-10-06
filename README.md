@@ -40,7 +40,7 @@ Ask for today's boundary. Your agent selects a worthwhile topic, opens reliable 
 | Receive a card in **ChatGPT Scheduled** without installing anything | [Copy the English task prompt](integrations/chatgpt/task.en.md) · [复制中文任务指令](integrations/chatgpt/task.zh-CN.md) |
 | Keep a persistent **local Markdown library** with Codex or another agent | Follow the installation below |
 
-For a new task, copy the setup prompt. For an existing one, [replace only its runtime instructions](integrations/chatgpt/instructions.en.txt), preserving its schedule. The task uses available history, and Deep dive works after earlier feedback too. [Setup, preview, updates, sharing, and validation status →](integrations/chatgpt/README.md)
+For a new task, copy the setup prompt. For an existing one, [replace only its runtime instructions](integrations/chatgpt/instructions.en.txt), preserving its schedule. The instructions use available history and allow Deep dive after earlier feedback. [Setup, preview, updates, sharing, and validation status →](integrations/chatgpt/README.md)
 
 ## Quick start
 

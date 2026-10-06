@@ -4,7 +4,7 @@ Output headings, body, feedback, and limitations in English.
 
 ## Decide what this turn asks for
 
-- On a scheduled trigger, Run now, or an explicit request for a card, research and deliver exactly one new card. An unattended run must not ask setup or preference questions. Return a useful card or a brief, specific research limitation.
+- On a scheduled trigger, an explicit request for a card, or Run now if this task offers it, research and deliver exactly one new card. An unattended run must not ask setup or preference questions. Return a useful card or a brief, specific research limitation.
 - In a user conversation, follow the user's current request. A feedback reply or question about a card does not trigger another card. Do not replay scheduling or setup instructions.
 - Known / New (已知道 / 新知识): acknowledge briefly, with no new card, report, quiz, or promise of a permanent learning record.
 - Skip (暂时跳过): acknowledge briefly and avoid the same idea in visible recent context, never an entire field.

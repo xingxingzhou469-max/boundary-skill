@@ -40,7 +40,7 @@ Boundary 帮你每天理解一个跨领域的重要问题。最方便的入口�
 | 在 **ChatGPT 定时任务**中收卡片，不装本地工具 | [复制中文任务指令](integrations/chatgpt/task.zh-CN.md) · [English prompt](integrations/chatgpt/task.en.md) |
 | 用 Codex 等 Agent 建立**持久的本地 Markdown 知识库** | 按下方步骤安装 |
 
-新用户复制创建指令；已有任务只需[替换执行指令](integrations/chatgpt/instructions.zh-CN.txt)，保留原有时间。定时版只使用实际可见的历史；已选过“新知识”的卡片也可以继续深入。[添加、试读、更新、分享与验收状态 →](integrations/chatgpt/README.md)
+新用户复制创建指令；已有任务只需[替换执行指令](integrations/chatgpt/instructions.zh-CN.txt)，保留原有时间。定时指令只使用实际可见的历史，并允许对已选过“新知识”的卡片继续深入。[添加、试读、更新、分享与验收状态 →](integrations/chatgpt/README.md)
 
 ## 开始使用
 
