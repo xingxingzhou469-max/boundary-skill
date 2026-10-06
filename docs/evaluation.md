@@ -24,16 +24,25 @@ Use an isolated folder and explicit `--config`, never a real reading history. Re
 
 ## Scheduled-task adapter cases
 
-Use the payload from `integrations/chatgpt/task.en.md` or `task.zh-CN.md`. An ordinary agent replay checks instruction behavior only. A real scheduled run in ChatGPT is a separate acceptance gate.
+Use `integrations/chatgpt/task.en.md` or `task.zh-CN.md` for new-task setup, and `instructions.en.txt` or `instructions.zh-CN.txt` for saved runtime instructions. An ordinary agent replay checks instruction behavior only. A real scheduled run in ChatGPT is a separate acceptance gate.
 
 | ID | Setup | Observable acceptance criteria |
 |---|---|---|
-| task-setup | Paste the complete prompt into an eligible ChatGPT account. | Actual task confirmation with the intended schedule and timezone; no folder or Python setup. Do not record PASS from a textual promise alone. |
+| task-setup | Paste the complete setup prompt into an eligible ChatGPT account. | One actual task confirmation with the intended schedule, timezone, and return-to-chat destination; no folder or Python setup. Unsupported destinations are explained before choosing an alternative. Do not record PASS from a textual promise alone. |
+| task-prompt-isolation | Inspect the task's saved instructions after setup. | Contains the runtime text and shared quality rules, excluding the setup request and BEGIN/END markers. A later scheduled run does not create another task. |
+| task-update | An existing Boundary task is identified; replace its instructions with the runtime text. | Edits that task only; no duplicate task, changed schedule, timezone, or notification preference. Actual save is confirmed. |
+| task-preview | Paste runtime text into a regular chat; ask for a card without a task. | Delivers a sourced card if tools are available; does not schedule or claim scheduled execution. |
 | task-time-limit | Account can schedule daily but not at an exact requested time. | Explains the available window and asks before changing the requested time; no false 9:00 AM confirmation. |
+| task-capacity | Account has no room for another active task. | States the actual blocker; no false confirmation and no pausing/deleting another task. |
 | task-history-gap | A scheduled run has no visible earlier cards. | No invented history or durable-deduplication claim; useful sourced card if tools are available, with a brief visible-context limitation. |
 | task-no-browsing | The run cannot open sources. | Brief capability limitation, no purportedly verified fresh card and no fabricated file writes. |
 | task-deep | Reply Deep dive to a visible scheduled card. | Uses its question, researches afresh, delivers the full report in conversation, no local CLI or second task. |
+| task-later-deep | Reply New/Known to a card, then request Deep dive later. | Feedback is a brief acknowledgement; the later report is allowed, uses the identified question, and requires no second depth choice. |
+| task-next-run | A user deep dive or ordinary follow-up happened after the last card; the timer triggers again. | Delivers one new card, not another report or a replay of the user reply; avoids semantic repeats in visible history. |
+| task-ambiguous-deep | Two earlier cards could match “Deep dive,” with no clear referent. | Asks only which title/question; no guessing, new card, or task creation. |
 | task-first-run | Observe a real run at its scheduled time. | Delivery and source-opening evidence, correct output language, no setup questions mid-run, schedule retained. Only this can verify the live host. |
+
+For continuous-host validation, observe seven scheduled deliveries in one real account. Record their actual times/timezones, task status and next run, accessible history, topic/mechanism repeats, opened-source evidence, and one feedback → later deep-dive → next-card sequence. Keep account details and transcripts private. Missing observations are BLOCKED or not run, never inferred PASS. A shared-task link requires its own recipient check: saved instructions, original timezone, empty creator history, and recipient tool availability.
 
 ## Judging content
 

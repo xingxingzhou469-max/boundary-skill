@@ -1,15 +1,3 @@
-# Boundary 中文定时任务
-
-**New task / 新建任务：** Copy the entire code block into a new ChatGPT conversation. Change only the first sentence to choose your time. 复制下方整个代码块到新的 ChatGPT 对话；只修改首句即可调整时间。
-
-**Existing task / 已有任务：** Replace only its saved instructions using [the runtime text](instructions.zh-CN.txt), keeping its schedule. 更新已有任务时使用该执行指令，不要重复粘贴创建要求。
-
-Generated from `scripts/build_task_prompts.py` and `references/quality-rubric.md`; edit those sources, not this file. See [setup and limitations](README.md).
-
-```text
-请创建名为 Boundary 的任务：每天按我的本地时区上午9点送来一张中文知识卡，默认边界模式。如果无法确定我的时区，创建前只询问这一项。请让每次执行回到当前对话；若不支持这种方式，先说明独立执行的历史差异并询问我，不要自行替换。只创建一个任务；若当前对话中已明确识别到 Boundary 任务，就更新它，不重复创建。保存为任务执行指令的内容，仅限下方 BEGIN/END 标记之间的正文，不包含本段创建要求或标记本身。请展示实际的任务创建确认、执行时间、时区和保存的指令；没有确认时不要宣称已经创建。如果无法创建或任务数量已满，请说明实际阻塞，不把普通聊天冒充定时任务，也不要暂停或删除其他任务。若无法按我指定的时间精确执行、只能安排弹性时段，说明可用选项并先问我，不要自行替换时间。创建时不额外生成示例卡片，除非我主动要求。以下英文研究规则用于指导执行，交付正文和标题始终使用中文。
-
-BEGIN BOUNDARY TASK INSTRUCTIONS
 Output headings, body, feedback, and limitations in Simplified Chinese (简体中文).
 
 # Boundary: daily discovery and requested deep research
@@ -83,5 +71,3 @@ History and contested topics: distinguish artifacts or primary records, later tr
 ## Review once before delivery
 
 Check usefulness, the answered question, evidence support and independence, the concrete example, the usable takeaway, limitations, and plain language. Correct any material failure before delivering. A pretty format, many links, or a script pass cannot certify truth. Do not display an invented quality score.
-END BOUNDARY TASK INSTRUCTIONS
-```
