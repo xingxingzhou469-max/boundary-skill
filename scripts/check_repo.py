@@ -5,8 +5,11 @@ from __future__ import annotations
 import json
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
+
+from state import DOMAINS
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED = (
@@ -19,6 +22,7 @@ REQUIRED = (
     "integrations/chatgpt/instructions.en.txt", "integrations/chatgpt/instructions.zh-CN.txt",
     "examples/card.en.md", "examples/card.zh-CN.md", "examples/report.en.md",
     "examples/card.sources.json", "examples/report.sources.json", "examples/card.metadata.json",
+    "evals/cases.json",
 )
 
 
@@ -70,6 +74,38 @@ def check(root: Path) -> list[str]:
                 errors.append(f"Too few sources in {path.name}")
         except (ValueError, OSError) as exc:
             errors.append(f"Invalid example source JSON: {path.name}: {exc}")
+    case_path = root / "evals/cases.json"
+    if case_path.is_file():
+        try:
+            catalog = json.loads(case_path.read_text(encoding="utf-8"))
+            if not isinstance(catalog, dict) or not isinstance(catalog.get("cases"), list):
+                raise ValueError("expected a versioned case object with a cases list")
+            if not isinstance(catalog.get("eval_set_version"), str) or not catalog["eval_set_version"].strip():
+                raise ValueError("eval_set_version must be nonempty")
+            cases = catalog["cases"]
+            fields = {"id", "domain", "language", "prompt", "setup", "observable_checks"}
+            for case in cases:
+                if not isinstance(case, dict) or fields - case.keys():
+                    raise ValueError("every case needs id, domain, language, prompt, setup, and observable_checks")
+                if any(not isinstance(case[key], str) or not case[key].strip() for key in ("id", "prompt")):
+                    raise ValueError("case IDs and prompts must be nonempty strings")
+                if case["language"] not in {"zh", "en"} or case["domain"] not in [None, *DOMAINS]:
+                    raise ValueError(f"invalid language or domain in {case['id']}")
+                if case["setup"] is not None and not isinstance(case["setup"], dict):
+                    raise ValueError(f"invalid setup in {case['id']}")
+                checks = case["observable_checks"]
+                if not isinstance(checks, list) or not checks or any(not isinstance(item, str) or not item.strip() for item in checks):
+                    raise ValueError(f"observable_checks must be nonempty strings in {case['id']}")
+            if len({case["id"] for case in cases}) != len(cases):
+                raise ValueError("case IDs must be unique")
+            pairs = Counter((case["domain"], case["language"]) for case in cases if case["domain"] is not None)
+            expected = {(domain, language) for domain in DOMAINS for language in ("zh", "en")}
+            if set(pairs) != expected or any(count != 1 for count in pairs.values()):
+                raise ValueError("fixed cards must cover each of the 12 domains exactly once per language")
+            if sum(case["domain"] is None for case in cases) != 5:
+                raise ValueError("expected five guard cases")
+        except (ValueError, OSError, TypeError) as exc:
+            errors.append(f"Invalid fixed evaluation catalog: {exc}")
     return errors
 
 
@@ -78,7 +114,7 @@ def main() -> int:
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1
-    print("PASS: skill metadata, required files, example JSON, and local Markdown links")
+    print("PASS: skill metadata, required files, example JSON, fixed evaluation catalog, and local Markdown links")
     print("Not checked: external URL availability, research accuracy, or host/model behavior")
     return 0
 

@@ -45,6 +45,10 @@ explicitly chooses the destination. Allow `--config` to place it elsewhere.
 - `state.py deep` saves the deep research report as Markdown under `Reports/`
   and links it from the originating card. A `deep` report is a standalone,
   readable document, not a wrapper that requires the card.
+- An accepted Known/New card can receive a later report. Run `feedback --id
+  "..." --value deep` once to persist the request; the original feedback,
+  card body, and index entry remain unchanged. Attach the report with the same
+  `deep` command. Do not create a second card or rewrite feedback to Deep.
 - Preserve full references and source dates.
 - Use `_system/tmp/` only for reproducible inputs; remove temporary files after
   success.
@@ -94,10 +98,12 @@ atomic JSON files but do not lock a whole multi-file snapshot. External editors
 and sync programs do not participate in the CLI locks; avoid simultaneous edits
 while a command is writing. Keep normal backups of a valued library.
 
-`context.pending_reports` lists every card with finalized Deep feedback and no
-attached report, including entries older than the recent-history window. Resume
-those reports using their card ID. `deep` defaults to the stored question;
-`--question` is available for an explicit user change.
+`context.pending_reports` lists every card with a requested but unattached
+report, including entries older than the recent-history window. This includes
+finalized Deep cards and Known/New cards with a recorded `report_requested_at`.
+Resume those reports using their card ID without repeating feedback. `deep`
+defaults to the stored question; `--question` is available for an explicit user
+change. An attached report is never replaced by another request.
 
 Source metadata retains optional `accessed_at` and `published_at` dates when
 provided as valid `YYYY-MM-DD` strings. These dates record research provenance;

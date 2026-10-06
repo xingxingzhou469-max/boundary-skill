@@ -107,7 +107,7 @@ Remove the temporary input files after `record` succeeds. If the user asks for a
 
 ## Process feedback
 
-Use the stable card `id` returned by `record`, or locate it in `context` after a restart. If multiple cards could match an ambiguous reply, ask which one; never guess an ID. Known/New/Skip apply only to a pending (`shown`) card:
+Use the stable card `id` returned by `record`, or locate it in `context` after a restart. For an older accepted card outside `context.recent`, find its title and note path in the local index, then match that note to the ID in `<boundary-root>/_system/state.json`. Read only this Boundary library. If multiple cards could match an ambiguous reply, ask which one; never guess an ID. Known/New/Skip apply only to a pending (`shown`) card:
 
 ```bash
 python3 "$SKILL_DIR/scripts/state.py" feedback --id "..." --value new
@@ -117,10 +117,10 @@ Map responses as follows:
 
 - `known`: finalize the pending card under `Cards/` and append it to the index.
 - `new`: finalize the pending card, append it to the index, and count the shown domain and regions as coverage.
-- `deep`: finalize the pending card and index, then produce exactly one deep research report (see "Deep dive" below). Never interpret `deep`/`深入了解` as anything less than the full in-depth report.
+- `deep`: finalize a pending card and index, or request a report for an already accepted Known/New card while preserving its original feedback. Then produce exactly one deep research report (see "Deep dive" below). Never interpret `deep`/`深入了解` as anything less than the full in-depth report.
 - `skipped`: delete the pending body, create no formal note, and retain only transparent metadata for the seven-day topic cooldown and domain weighting. If the user skipped because the topic was too obscure, too specialized, or not useful, treat that as feedback on the topic—not evidence that the entire domain is unwanted.
 
-`feedback` performs the card and index writes. Do not recreate those files manually. Feedback is final for that shown card. For `deep` feedback already recorded but no report attached, resume the report from `context.pending_reports` without calling `feedback` again. If a report already exists, open it; do not overwrite it. A request to research an already accepted Known/New card is a separate research request and must not rewrite its finalized feedback.
+`feedback` performs the card and index writes. Do not recreate those files manually. Known/New feedback remains final. A later Deep dive uses `feedback --id "..." --value deep` once to record the report request without changing that feedback, the card, or its index entry. If the card is already in `context.pending_reports`, resume research without repeating the request. This includes interrupted initial Deep dives and later requests on accepted Known/New cards. If a report already exists, open it; do not overwrite it. A skipped local card has no saved body and cannot receive an attached report.
 
 ## Deep dive
 
@@ -140,7 +140,7 @@ Map responses as follows:
 
    This creates `Reports/<slug>-deep-research.md` and links it back to the card. Remove the temporary input files after success.
 
-5. Deliver the report without another action menu. A deep dive never spawns an automatic follow-up. If research is interrupted, keep the accepted card and resume the missing report later; do not invent a placeholder report to complete the workflow.
+5. Deliver the report without another action menu. A deep dive never spawns an automatic follow-up. If research is interrupted, keep the accepted card and resume the missing report later from `context.pending_reports`; do not invent a placeholder report to complete the workflow.
 
 Each level requires fresh source verification. For academic, medical, financial, legal, and contested subjects, apply the domain-specific rules in `source-policy.md`. Never provide personal diagnosis, individualized legal advice, or direct buy/sell instructions.
 
