@@ -15,11 +15,11 @@ One source-checked knowledge card. Twelve fields to explore. A full deep dive wh
 
 **English** · [简体中文](README.zh-CN.md)
 
-[Read a card](examples/card.en.md) · [Install](#quick-start) · [Try locally](#try-the-storage-workflow-without-an-agent) · [Contribute](CONTRIBUTING.md)
+[Add a daily ChatGPT task](integrations/chatgpt/task.en.md) · [Read a card](examples/card.en.md) · [Install locally](#quick-start) · [Contribute](CONTRIBUTING.md)
 
 </div>
 
-Boundary is an [Agent Skill](https://agentskills.io): instructions and a small local state tool for your existing AI agent. It helps curious people explore useful ideas outside their usual fields, without an interest questionnaire or another recommendation feed.
+Boundary helps curious people understand one important cross-domain question each day. Add a daily task in ChatGPT to receive cards directly in conversation, or install it as an [Agent Skill](https://agentskills.io) to keep a local Markdown library with your existing agent. No interest questionnaire is needed.
 
 Ask for today's boundary. Your agent selects a worthwhile topic, opens reliable sources, and writes a direct 3–5 minute card. Reply **Deep dive** for a complete, plain-language research report on that card's central question. With the local Agent Skill, cards, citations, and reports stay in a folder you choose. The ChatGPT task edition delivers directly in its conversation.
 
@@ -40,7 +40,7 @@ Ask for today's boundary. Your agent selects a worthwhile topic, opens reliable 
 | Receive a card in **ChatGPT Scheduled** without installing anything | [Copy the English task prompt](integrations/chatgpt/task.en.md) · [复制中文任务指令](integrations/chatgpt/task.zh-CN.md) |
 | Keep a persistent **local Markdown library** with Codex or another agent | Follow the installation below |
 
-The ChatGPT adapter includes its full research instructions and uses only visible conversation history. It does not promise filesystem saves or durable deduplication. [Setup, sharing, and live-validation status →](integrations/chatgpt/README.md)
+For a new task, copy the setup prompt. For an existing one, [replace only its runtime instructions](integrations/chatgpt/instructions.en.txt), preserving its schedule. The instructions use available history and allow Deep dive after earlier feedback. [Setup, preview, updates, sharing, and validation status →](integrations/chatgpt/README.md)
 
 ## Quick start
 

@@ -1,23 +1,41 @@
 # Boundary for ChatGPT Scheduled Tasks
 
-Copy the entire code block into ChatGPT. Change the first sentence to choose your schedule. 复制下方整个代码块到 ChatGPT；修改首句即可调整时间。
+**New task / 新建任务：** Copy the entire code block into a new ChatGPT conversation. Change only the first sentence to choose your time. 复制下方整个代码块到新的 ChatGPT 对话；只修改首句即可调整时间。
+
+**Existing task / 已有任务：** Replace only its saved instructions using [the runtime text](instructions.en.txt), keeping its schedule. 更新已有任务时使用该执行指令，不要重复粘贴创建要求。
 
 Generated from `scripts/build_task_prompts.py` and `references/quality-rubric.md`; edit those sources, not this file. See [setup and limitations](README.md).
 
 ```text
-Create a task named Boundary: one knowledge card every day at 9:00 AM in my local timezone. If you cannot determine my timezone, ask only for that before scheduling. Output in English. Use Boundary mode by default. Show the actual task confirmation and schedule; do not claim it exists without confirmation. If scheduling is unavailable, explain that and do not pretend a normal chat is scheduled. If an exact time is unavailable but a flexible window is offered, explain the available choice and ask before substituting it.
+Create a task named Boundary: one knowledge card every day at 9:00 AM in my local timezone. If you cannot determine my timezone, ask only for that before scheduling. Output in English. Create a task that returns to this conversation. If that destination is unsupported, explain the history difference and ask before using independent runs. Create only one task; if a Boundary task is already identified here, update that task instead of making a duplicate. Save only the instructions between the BEGIN/END markers below as its recurring prompt, excluding this setup request and the markers. Show the actual task confirmation, schedule, timezone, and saved instructions; do not claim it exists without confirmation. If scheduling is unavailable or task capacity is full, explain the actual blocker; do not pretend a normal chat is scheduled or pause/delete other tasks. If an exact time is unavailable but a flexible window is offered, explain the available choice and ask before substituting it. Do not generate a sample card during setup unless I ask for one.
 
-## Each scheduled run
+BEGIN BOUNDARY TASK INSTRUCTIONS
+Output headings, body, feedback, and limitations in English.
 
-Deliver one card in this task conversation, without unattended setup questions. No local folder, Python, uploaded file, custom GPT, account connection, or repository fetch is required. Never claim local CLI execution, filesystem saves, or state.json persistence.
+# Boundary: daily discovery and requested deep research
 
-Avoid repeats using only cards and feedback actually visible here. If history is incomplete, briefly disclose that deduplication covers visible context only. Never invent history or promise durable seven-day cooldown. Include a short topic key and one-line summary for later identification. Do not build sensitive profiles or send history in search queries.
+## Decide what this turn asks for
 
-Explore twelve fields: Earth/space; life/medicine; math/physical sciences; engineering; history; philosophy/ethics; politics/law; economics/business; society/psychology; arts/literature; language; daily life/food/materials. Favor useful questions over coverage quotas. Honor explicit Wander/Alternate preferences; Alternate starts with Boundary when no prior mode is visible. Show the current mode.
+- On a scheduled trigger, an explicit request for a card, or Run now if this task offers it, research and deliver exactly one new card. An unattended run must not ask setup or preference questions. Return a useful card or a brief, specific research limitation.
+- In a user conversation, follow the user's current request. A feedback reply or question about a card does not trigger another card. Do not replay scheduling or setup instructions.
+- Known / New (已知道 / 新知识): acknowledge briefly, with no new card, report, quiz, or promise of a permanent learning record.
+- Skip (暂时跳过): acknowledge briefly and avoid the same idea in visible recent context, never an entire field.
+- Deep dive (深入了解): research the identified card's central question and deliver a complete report here. This is allowed even after Known, New, or Skip. If exactly one card is the clear referent, proceed; if missing or ambiguous, ask only which title/question. Do not offer another depth menu or create a research task. A user's deep-dive request applies to this conversation turn, not every future daily run.
+- A follow-up explanation should answer the question directly. A later scheduled run returns to one new card, regardless of earlier feedback or a report request.
 
-Known/New acknowledges feedback in chat. Skip avoids the idea in visible recent context, never an entire field. Deep dive researches the identified card's question and delivers a full report here. Ask for the card/question only if missing or ambiguous. Never generate a report automatically on the next scheduled run.
+## Use only the history that is available
 
-Use only available research tools. If sources cannot be opened or evidence is insufficient, state the limitation without presenting a verified card. Do not change the schedule, create another task, connect accounts, or send external messages. Keep existing notification settings.
+Before selecting a card, review visible earlier cards and feedback. Avoid repeating the same question or mechanism under a different title/example. A new domain label is not a new idea. Use coverage to broaden exploration without forcing quotas. Do not invent prior cards, read unrelated chats, build sensitive profiles, or put reading history in search queries. Do not promise all-time deduplication or a durable seven-day cooldown. Explain missing history if asked or if it affects a specific claim, not as boilerplate on every successful card.
+
+Explore twelve fields: Earth/space; life/medicine; math/physical sciences; engineering; history; philosophy/ethics; politics/law; economics/business; society/psychology; arts/literature; language; daily life/food/materials. Default to Boundary mode: important, transferable ideas outside recent coverage. Honor explicit Wander preferences (random field, same quality standard). Alternate alternates from the last visible card's mode; start with Boundary if none is visible. An explicit one-off mode change does not change future defaults.
+
+## Deliver in the conversation
+
+Use readable short paragraphs and natural headings for a phone-sized screen. A title, central question, field, and mode identify each card; include the run date only when known. Combine sections when that reads better. No machine topic-key fields, internal candidate lists, claim ledgers, invented scores, or routine installation notices in the delivered card. Finish a card with exactly the four replies in its output language. A requested report ends after its references, without another action menu.
+
+No local folder, Python, uploaded file, custom GPT, account connection, or repository fetch is required. Never claim CLI execution, filesystem saves, or state.json persistence. Use only research tools actually available in this run. If sources cannot be opened or evidence remains inadequate, give a brief limitation in the output language, without a purportedly verified card or feedback menu. Do not fill the gap with model memory, a scheduled promise, or a quiz.
+
+These are content instructions, not scheduling instructions. Do not change the schedule or notification settings, create another task, connect accounts, or send external messages during content delivery. Only an explicit user request to manage the existing task authorizes a schedule/instruction change; acknowledge it only after actual tool/UI confirmation.
 
 # Shared research and writing standard
 
@@ -65,4 +83,5 @@ History and contested topics: distinguish artifacts or primary records, later tr
 ## Review once before delivery
 
 Check usefulness, the answered question, evidence support and independence, the concrete example, the usable takeaway, limitations, and plain language. Correct any material failure before delivering. A pretty format, many links, or a script pass cannot certify truth. Do not display an invented quality score.
+END BOUNDARY TASK INSTRUCTIONS
 ```

@@ -16,6 +16,7 @@ REQUIRED = (
     "references/output-formats.md", "references/storage.md",
     "references/quality-rubric.md", "references/source-map.md",
     "integrations/chatgpt/task.en.md", "integrations/chatgpt/task.zh-CN.md",
+    "integrations/chatgpt/instructions.en.txt", "integrations/chatgpt/instructions.zh-CN.txt",
     "examples/card.en.md", "examples/card.zh-CN.md", "examples/report.en.md",
     "examples/card.sources.json", "examples/report.sources.json", "examples/card.metadata.json",
 )

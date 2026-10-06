@@ -15,11 +15,11 @@
 
 [English](README.md) · **简体中文**
 
-[先读一张卡](examples/card.zh-CN.md) · [安装](#开始使用) · [本地体验](#不接模型也能体验保存流程) · [参与改进](CONTRIBUTING.md)
+[添加 ChatGPT 每日任务](integrations/chatgpt/task.zh-CN.md) · [先读一张卡](examples/card.zh-CN.md) · [本地安装](#开始使用) · [参与改进](CONTRIBUTING.md)
 
 </div>
 
-Boundary 是一个 [Agent Skill](https://agentskills.io)：让你已有的 AI Agent 学会跨领域选题、核验来源、生成知识卡，并用一个小型 Python 工具管理本地记录。适合想扩大认知范围、又不想每天自己挑选主题的人。
+Boundary 帮你每天理解一个跨领域的重要问题。最方便的入口是在 ChatGPT 中添加每日任务，直接在对话里收卡片；也可以安装为 [Agent Skill](https://agentskills.io)，让已有的 AI Agent 管理本地 Markdown 知识库。适合想扩大认知范围、又不想每天自己挑选主题的人。
 
 说一句“给我今天的知识边界”，Agent 就会寻找一个重要、可迁移的主题，打开可靠来源，整理成 3～5 分钟可以读完的卡片。回复“深入了解”，它会围绕卡片上的核心问题，生成完整、通俗的研究报告。本地 Agent 版本会把卡片、引用和报告保存在你选择的文件夹里；ChatGPT 定时任务版本则直接在任务对话中交付。
 
@@ -40,7 +40,7 @@ Boundary 是一个 [Agent Skill](https://agentskills.io)：让你已有的 AI Ag
 | 在 **ChatGPT 定时任务**中收卡片，不装本地工具 | [复制中文任务指令](integrations/chatgpt/task.zh-CN.md) · [English prompt](integrations/chatgpt/task.en.md) |
 | 用 Codex 等 Agent 建立**持久的本地 Markdown 知识库** | 按下方步骤安装 |
 
-定时任务指令包含完整的核心研究规则，只使用任务里实际可见的历史，不冒充文件保存或永久去重。支持官方任务分享时，可让用户审阅后添加自己的副本。[添加、分享与实际验收状态 →](integrations/chatgpt/README.md)
+新用户复制创建指令；已有任务只需[替换执行指令](integrations/chatgpt/instructions.zh-CN.txt)，保留原有时间。定时指令只使用实际可见的历史，并允许对已选过“新知识”的卡片继续深入。[添加、试读、更新、分享与验收状态 →](integrations/chatgpt/README.md)
 
 ## 开始使用
 
