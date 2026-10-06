@@ -6,7 +6,7 @@
 
 **发现那些你还不知道该去搜索的重要知识。**
 
-一张查证过的知识卡，十二个探索领域，想深入时一步到底。
+3～5 分钟读懂一个重要问题，想深入时继续读完整报告。
 
 [![CI](https://github.com/xingxingzhou469-max/boundary-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/xingxingzhou469-max/boundary-skill/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -19,9 +19,11 @@
 
 </div>
 
-Boundary 帮你每天理解一个跨领域的重要问题。最方便的入口是在 ChatGPT 中添加每日任务，直接在对话里收卡片；也可以安装为 [Agent Skill](https://agentskills.io)，让已有的 AI Agent 管理本地 Markdown 知识库。适合想扩大认知范围、又不想每天自己挑选主题的人。
+**Boundary 是一个帮助你拓宽知识边界的开源 AI 技能：发现你还没想到要搜索、却值得理解的重要问题。** 它从科学、历史、经济、哲学等十二个领域选择主题，优先介绍能帮助你理解世界、判断问题的核心概念，适合想扩大知识范围、又不想每天自己挑选主题的人。
 
-说一句“给我今天的知识边界”，Agent 就会寻找一个重要、可迁移的主题，打开可靠来源，整理成 3～5 分钟可以读完的卡片。回复“深入了解”，它会围绕卡片上的核心问题，生成完整、通俗的研究报告。本地 Agent 版本会把卡片、引用和报告保存在你选择的文件夹里；ChatGPT 定时任务版本则直接在任务对话中交付。
+说一句“给我今天的知识边界”，AI 就会先打开可靠来源，再写成 3～5 分钟可读完的中文知识卡。每张卡说明核心原理、具体例子、能怎样运用以及适用边界，并附上来源。回复“深入了解”，就能围绕同一个问题继续阅读完整、通俗的研究报告。
+
+你可以复制 [ChatGPT 中文任务指令](integrations/chatgpt/task.zh-CN.md)，在对话中接收内容；也可以安装为 [Agent Skill](https://agentskills.io)，让 Codex 等支持技能的 AI 工具把卡片、引用和报告保存在自己的文件夹里。使用时需要 AI 工具具备联网搜索和打开来源的能力；本地安装另需 Python 3.10+。
 
 ## 先看看实际内容
 
