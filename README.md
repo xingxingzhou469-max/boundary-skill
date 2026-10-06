@@ -44,6 +44,8 @@ For a new task, copy the setup prompt. For an existing one, [replace only its ru
 
 ## Quick start
 
+These installation requirements apply to the local Agent Skill. ChatGPT users can use the [task prompt](integrations/chatgpt/task.en.md) directly without Python or a local folder.
+
 You need a skill-capable agent with **web search, source-opening, shell, and local file access**, plus **Python 3.10+**. Boundary does not supply a model or search service. Your host's normal usage limits and costs apply.
 
 Install using the [Skills CLI](https://github.com/vercel-labs/skills):
@@ -69,13 +71,19 @@ Use your own absolute folder path. Language defaults to your current language an
 |---|---|
 | **Boundary** · default | Prioritizes important, transferable concepts. Recent coverage helps broaden the search without forcing a quota. |
 | **Wander** · on request | Randomly chooses where to look, then applies the same usefulness and evidence standards. |
-| **Alternate** · optional | Alternates Boundary and Wander after each recorded card. |
+| **Alternate** · optional | Alternates Boundary and Wander. |
 
 Try “Use Wander mode today” for a one-off change. It does not change your saved preference.
+
+For Alternate mode, the local skill uses recorded card modes; ChatGPT uses the last card's mode actually visible in its conversation. Repeat avoidance still checks all available history. Neither edition changes a future default from a one-off mode request.
 
 The twelve domains span Earth and space, life and medicine, mathematics and physical sciences, engineering, history, philosophy, institutions, economics, society, the arts, language, and everyday materials. See the [selection rules](references/domains.md).
 
 ## Four replies, two reading levels
+
+**In ChatGPT:** Known / New / Skip acknowledges feedback briefly. Deep dive remains available after any of those replies and delivers a report in conversation. History and repeat avoidance use only visible context; see [the task behavior table](integrations/chatgpt/README.md#收到卡片之后).
+
+**With the local Agent Skill:**
 
 | Reply | Result |
 |---|---|
@@ -90,11 +98,15 @@ A shown card is saved before delivery, so you can resume after closing the chat.
 
 - The agent must open sources before drafting: at least **two independent publishers per card**, **three per report**.
 - Important claims get links at the point of use. Cards include a concrete example, a usable takeaway, and a boundary of applicability. Reports investigate alternative explanations and describe what the evidence can actually establish.
-- No adequate sources? Choose another topic. No browsing capability? Report the blocker.
+- For a card with inadequate sources, try another candidate; if evidence is still inadequate, report the limitation. For a report, retain its question and state the evidence gap. No browsing capability? Report the blocker.
 - The Python script checks metadata, duplicates, and the save/feedback lifecycle. **It cannot verify factual truth, publisher independence, or whether the agent opened a page.**
 - Medical, legal, financial, and contested topics follow [specific evidence rules](references/source-policy.md). Outputs remain educational.
 
+The [2026-10-06 quality review](docs/evaluation-results.md) records seven native Agent trials, observed improvements, and remaining precision issues. Real ChatGPT scheduled delivery remains unverified.
+
 ## Your files, ordinary formats
+
+The local Agent Skill creates this folder structure. The ChatGPT task edition delivers its content in conversation.
 
 ```text
 Your-Boundary-folder/

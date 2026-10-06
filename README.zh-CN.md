@@ -40,9 +40,11 @@ Boundary 帮你每天理解一个跨领域的重要问题。最方便的入口�
 | 在 **ChatGPT 定时任务**中收卡片，不装本地工具 | [复制中文任务指令](integrations/chatgpt/task.zh-CN.md) · [English prompt](integrations/chatgpt/task.en.md) |
 | 用 Codex 等 Agent 建立**持久的本地 Markdown 知识库** | 按下方步骤安装 |
 
-新用户复制创建指令；已有任务只需[替换执行指令](integrations/chatgpt/instructions.zh-CN.txt)，保留原有时间。定时指令只使用实际可见的历史，并允许对已选过“新知识”的卡片继续深入。[添加、试读、更新、分享与验收状态 →](integrations/chatgpt/README.md)
+新用户复制创建指令；已有任务只需[替换执行指令](integrations/chatgpt/instructions.zh-CN.txt)，保留原有时间。定时指令只使用实际可见的历史；此前选过“已知道”“新知识”或“暂时跳过”，仍可对该卡片继续深入。[添加、试读、更新、分享与验收状态 →](integrations/chatgpt/README.md)
 
 ## 开始使用
+
+以下安装要求适用于本地 Agent Skill。ChatGPT 用户可直接使用[任务指令](integrations/chatgpt/task.zh-CN.md)，无需 Python 或本地文件夹。
 
 需要一个支持技能、**网页搜索、打开来源、执行命令和读写本地文件**的 Agent，以及 **Python 3.10+**。Boundary 不提供模型或搜索服务，使用量与费用遵循你的 Agent 平台规则。
 
@@ -69,13 +71,19 @@ npx skills add xingxingzhou469-max/boundary-skill --skill boundary -g
 |---|---|
 | **边界 Boundary** · 默认 | 优先考虑其他领域的重要概念、机制和制度，近期覆盖只帮助保持广度，不强行凑领域配额。 |
 | **漫游 Wander** · 主动选择 | 随机选择探索方向，再通过相同的价值与证据标准。 |
-| **交替 Alternate** · 可选设置 | 每记录一张卡片后，在边界和漫游之间切换。 |
+| **交替 Alternate** · 可选设置 | 在边界和漫游之间切换。 |
 
 说“今天用漫游模式”只改变这次选择，不改保存的默认设置。陌生不等于有价值：一个没学过的基础概念，往往比罕见却缺少解释力的冷知识更值得认识。
+
+交替模式依据上一张卡片的模式切换：本地技能使用已记录的模式，ChatGPT 使用对话中实际可见的上一张卡片。避重复仍会检查全部可用历史。一次性的模式请求不会改写以后默认的选题方式。
 
 十二个领域覆盖天地、生物、数理、工程、历史、哲学、制度、经济、社会、艺术、语言与日常材料；详见[选题规则](references/domains.md)。
 
 ## 四种反馈，两个阅读层级
+
+**在 ChatGPT 中：**“已知道”“新知识”“暂时跳过”只作简短确认；这些反馈之后仍可“深入了解”，报告在对话中交付。历史与避重复仅依赖实际可见的上下文，详见[任务反馈说明](integrations/chatgpt/README.md#收到卡片之后)。
+
+**本地 Agent Skill 的保存行为：**
 
 | 反馈 | 会发生什么 |
 |---|---|
@@ -90,11 +98,15 @@ npx skills add xingxingzhou469-max/boundary-skill --skill boundary -g
 
 - 每张卡至少两个独立发布机构，每份报告至少三个；Agent 必须打开底层来源。
 - 重要事实旁放引用链接；卡片增加具体例子、可带走的用法和适用边界，长文检查替代解释并说明证据究竟能证明什么。
-- 来源不足就换题；无法联网查证就说明阻塞。
+- 卡片来源不足时尝试另一个候选；若仍不足，则简短说明限制。报告保留原问题并说明证据缺口。无法联网查证就说明阻塞。
 - **脚本只能检查来源字段、重复情况和保存流程，不能自动证明事实正确、来源独立，或网页确实被打开。**
 - 医疗、法律、金融与争议主题遵循[专门证据规范](references/source-policy.md)，保持知识教育用途。
 
+[2026-10-06 质量检查记录](docs/evaluation-results.md)公开了七组原生 Agent 测试的改进和剩余精度问题。真实 ChatGPT 定时交付仍未验收。
+
 ## 数据是你的普通文件
+
+以下目录由本地 Agent Skill 创建；ChatGPT 任务版在对话中交付内容。
 
 ```text
 你选择的 Boundary 文件夹/
