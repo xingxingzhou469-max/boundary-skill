@@ -228,26 +228,29 @@ class BoundaryCliTestCase(unittest.TestCase):
                 self.assertEqual(state_before, state_path.read_bytes())
                 self.assertEqual([], list((self.root / "_system" / "pending").iterdir()))
 
-    def test_context_rejects_malformed_shown_at_without_mutating_history(self) -> None:
+    def test_reads_and_mutations_reject_malformed_history_timestamps(self) -> None:
         recorded = self.record_card()
+        self.run_cli("feedback", "--id", recorded["id"], "--value", "known")
         state_path = self.root / "_system" / "state.json"
-        for corrupt_value in (None, 123, "not-a-timestamp", "2026-10-07"):
-            with self.subTest(shown_at=corrupt_value):
-                state = json.loads(state_path.read_text(encoding="utf-8"))
-                state["history"][0]["shown_at"] = corrupt_value
-                state_path.write_text(json.dumps(state), encoding="utf-8")
-                corrupted_bytes = state_path.read_bytes()
-
-                result = self.run_cli("context", expect_ok=False)
-
-                self.assertNotEqual(0, result.returncode)
-                self.assertIn(recorded["id"], result.stderr)
-                self.assertIn("shown_at", result.stderr)
-                self.assertNotIn("Traceback", result.stderr)
-                self.assertEqual(corrupted_bytes, state_path.read_bytes())
-
-                state["history"][0]["shown_at"] = recorded["shown_at"]
-                state_path.write_text(json.dumps(state), encoding="utf-8")
+        accepted_bytes = state_path.read_bytes()
+        for field in ("shown_at", "feedback_at", "report_requested_at"):
+            for corrupt_value in (None, 123, "not-a-timestamp", "2026-10-07"):
+                with self.subTest(field=field, value=corrupt_value):
+                    state = json.loads(accepted_bytes)
+                    state["history"][0][field] = corrupt_value
+                    state_path.write_text(json.dumps(state), encoding="utf-8")
+                    corrupted_bytes = state_path.read_bytes()
+                    for command in (
+                        ("context",),
+                        ("feedback", "--id", recorded["id"], "--value", "deep"),
+                    ):
+                        result = self.run_cli(*command, expect_ok=False)
+                        self.assertNotEqual(0, result.returncode)
+                        self.assertIn(recorded["id"], result.stderr)
+                        self.assertIn(field, result.stderr)
+                        self.assertNotIn("Traceback", result.stderr)
+                        self.assertEqual(corrupted_bytes, state_path.read_bytes())
+        state_path.write_bytes(accepted_bytes)
 
     def test_known_or_new_card_can_later_attach_one_deep_report(self) -> None:
         for feedback_value in ("known", "new"):

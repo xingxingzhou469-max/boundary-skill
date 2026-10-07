@@ -409,16 +409,12 @@ def validate_entry(item: Any, path: Path) -> None:
     missing = sorted(required - item.keys())
     if missing:
         raise SystemExit(f"History entry {item.get('id', '<unknown>')} is missing: {', '.join(missing)}")
-    if not valid_timestamp(item["shown_at"]):
-        raise SystemExit(
-            f"Invalid shown_at in history entry {item['id']} in {path}: "
-            "expected an ISO 8601 date-time"
-        )
-    if "report_requested_at" in item and not valid_timestamp(item["report_requested_at"]):
-        raise SystemExit(
-            f"Invalid report_requested_at in history entry {item['id']} in {path}: "
-            "expected an ISO 8601 date-time"
-        )
+    for field in ("shown_at", "feedback_at", "report_requested_at"):
+        if field in item and not valid_timestamp(item[field]):
+            raise SystemExit(
+                f"Invalid {field} in history entry {item['id']} in {path}: "
+                "expected an ISO 8601 date-time"
+            )
     if item["feedback"] not in FEEDBACK:
         raise SystemExit(f"Invalid feedback in {path}: {item['feedback']}")
     if not isinstance(item["domains"], list) or not item["domains"]:
