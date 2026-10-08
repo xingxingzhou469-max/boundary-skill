@@ -4,7 +4,7 @@ The Python suite verifies local lifecycle and metadata invariants. This document
 
 A green Python suite verifies local structure and lifecycle only. It does not establish factual accuracy, that a source URL was opened, publisher independence, or that an agent delivered a useful card.
 
-For observed runs and limitations, see the [2026-10-06 content-review results](evaluation-results.md) and the [2026-10-07 fixed-catalog and storage results](evaluation-20261007.md).
+For observed runs and limitations, see the [2026-10-06 content-review results](evaluation-results.md), [2026-10-07 fixed-catalog and storage results](evaluation-20261007.md), and [2026-10-08 seven consecutive ChatGPT generations](evaluation-20261008.md).
 
 ## Fixed prompt cases
 

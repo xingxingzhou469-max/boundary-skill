@@ -52,11 +52,13 @@ Original observed failures were not rewritten into passes. Climate reviews prese
 
 ## Real ChatGPT gate
 
+**2026-10-08 scope update:** the user replaced the calendar wait with seven immediate consecutive generations. That replacement test is [complete with findings](evaluation-20261008.md), and the local calendar follow-up was stopped. The original daily task was retained. The observations below describe the earlier test and its limits; they are not pending requirements for the replacement test.
+
 An existing task reported enabled, exact daily 09:00 Asia/Shanghai scheduling and runtime-only instructions after an authorized task-tool query. New feedback received a brief acknowledgement; the later identified question received a full report without another depth choice. Independent content review retained distinctions that needed tightening: air temperature versus radiant environment, separate study protocols/sample counts, and complete visible source records.
 
 A task-level `last_run_time` changed to `2026-10-07T00:58:10.794835Z`, and a new card appeared after the report. The available interface exposed no run ID, trigger type or result binding. Thus one task-level run and one subsequent card were observed, but a confirmed scheduled delivery could not be counted. Raw task/source tool traces were not exposed by the reading interface; assistant-reported fields were labeled accordingly.
 
-The seven planned observation dates are 2026-10-07 through 2026-10-13. A local follow-up was configured for daily 09:20 to collect evidence without changing the original task. It will summarize PASS/FAIL/BLOCKED/NOT RUN after the seven observation dates; seven observations must not be reported as seven successful deliveries. Local configuration is not evidence that future follow-ups ran, and the computer/Codex must be available for local observation. **Seven-day scheduled acceptance: NOT READY.**
+The earlier seven planned observation dates were 2026-10-07 through 2026-10-13. A local follow-up was configured for daily 09:20 to collect evidence without changing the original task, then stopped when the user replaced this scope. Local configuration is not evidence that future follow-ups ran. **Historical scheduled-delivery binding: unverified; calendar follow-up superseded.**
 
 ## Next correction targets
 
@@ -64,4 +66,4 @@ Use the retained failures for the next fixed-input comparison: verify source pub
 
 ## 中文说明
 
-本轮完成了本地存储修复、25 项测试、24 张中英文卡片与独立复核。18 个案例符合检查项，6 个保留失败，涉及文字对象、来源身份、示例证据、机制推断及原稿保留。该数字不等于模型准确率。真实反馈后深入的报告和一次任务级运行已观察到，但计划触发与具体输出的绑定无法核验；七天实测仍在进行，不能称为已通过。
+本轮完成了本地存储修复、25 项测试、24 张中英文卡片与独立复核。18 个案例符合检查项，6 个保留失败，涉及文字对象、来源身份、示例证据、机制推断及原稿保留。该数字不等于模型准确率。真实反馈后深入的报告和一次任务级运行已观察到，但计划触发与具体输出的绑定无法核验。2026-10-08用户将七天等待改为连续七轮生成；新测试已完成，见上方更新，原每日任务保留。
