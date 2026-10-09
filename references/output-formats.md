@@ -35,8 +35,8 @@ Aim for a 3–5 minute direct read. Do not begin with a quiz. Choose headings in
 [High/Medium plus uncertainty, disagreement, or date sensitivity.]
 
 ## 来源 / Sources
-- [Original source title](URL) — why it supports the card
-- [Original source title](URL) — why it supports the card
+- [Original source title](URL) — publisher; supported claim and locator when needed; actual access date
+- [Original source title](URL) — publisher; supported claim and locator when needed; actual access date
 
 **下一步 / Next:** [已知道 / 新知识 / 深入了解 / 暂时跳过 OR Known / New / Deep dive / Skip]
 ```
