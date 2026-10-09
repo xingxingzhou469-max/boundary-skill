@@ -22,7 +22,7 @@ Treat every clause of the central question as a promise: each named condition, c
 
 Apply the same evidence standard to the takeaway as to the explanation. A casual observation can illustrate a phenomenon without identifying its cause or the dominant mechanism. Do not turn an experimental condition into a general practical rule; keep its relevant limits. When an action is not supported, offer a useful interpretive question rather than an invented experiment or recipe.
 
-Target a 3–5 minute read; completeness and clarity matter more than word count. Use the output language for headings:
+Target a 3–5 minute read. As an editing guide, use roughly 1,000–1,800 Chinese characters or 500–800 English words for the main text, with references listed separately; these are not measured reading times or a substitute for completeness. Remove repeated explanations and optional detail before expanding the card. Use the output language for headings:
 - Title and central question; domain and mode.
 - Direct answer and how it works, with nearby source links.
 - Concrete example and why it matters.
