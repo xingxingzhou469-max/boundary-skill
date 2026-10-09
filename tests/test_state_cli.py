@@ -181,6 +181,188 @@ class BoundaryCliTestCase(unittest.TestCase):
             index_path.read_text(encoding="utf-8"),
         )
 
+    def test_record_rejects_blank_core_text_before_writing_state(self) -> None:
+        body, sources = self.write_card_input()
+        state_path = self.root / "_system" / "state.json"
+        state_before = state_path.read_bytes()
+        values = {
+            "title": "   ",
+            "question": "\t  ",
+            "summary": "   ",
+        }
+
+        for field, value in values.items():
+            with self.subTest(field=field):
+                arguments = {
+                    "title": "可用标题",
+                    "question": "可用问题？",
+                    "summary": "可用摘要。",
+                }
+                arguments[field] = value
+                result = self.run_cli(
+                    "record",
+                    "--title",
+                    arguments["title"],
+                    "--question",
+                    arguments["question"],
+                    "--summary",
+                    arguments["summary"],
+                    "--slug",
+                    f"blank-{field}",
+                    "--topic-key",
+                    f"blank-{field}",
+                    "--domain",
+                    "history-archaeology",
+                    "--region",
+                    "Southern Africa",
+                    "--mode",
+                    "boundary",
+                    "--body",
+                    str(body),
+                    "--sources",
+                    str(sources),
+                    expect_ok=False,
+                )
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn(field, result.stderr.lower())
+                self.assertEqual(state_before, state_path.read_bytes())
+                self.assertEqual([], list((self.root / "_system" / "pending").iterdir()))
+
+    def test_reads_and_mutations_reject_malformed_history_timestamps(self) -> None:
+        recorded = self.record_card()
+        self.run_cli("feedback", "--id", recorded["id"], "--value", "known")
+        state_path = self.root / "_system" / "state.json"
+        accepted_bytes = state_path.read_bytes()
+        for field in ("shown_at", "feedback_at", "report_requested_at"):
+            for corrupt_value in (None, 123, "not-a-timestamp", "2026-10-07"):
+                with self.subTest(field=field, value=corrupt_value):
+                    state = json.loads(accepted_bytes)
+                    state["history"][0][field] = corrupt_value
+                    state_path.write_text(json.dumps(state), encoding="utf-8")
+                    corrupted_bytes = state_path.read_bytes()
+                    for command in (
+                        ("context",),
+                        ("feedback", "--id", recorded["id"], "--value", "deep"),
+                    ):
+                        result = self.run_cli(*command, expect_ok=False)
+                        self.assertNotEqual(0, result.returncode)
+                        self.assertIn(recorded["id"], result.stderr)
+                        self.assertIn(field, result.stderr)
+                        self.assertNotIn("Traceback", result.stderr)
+                        self.assertEqual(corrupted_bytes, state_path.read_bytes())
+        state_path.write_bytes(accepted_bytes)
+
+    def test_known_or_new_card_can_later_attach_one_deep_report(self) -> None:
+        for feedback_value in ("known", "new"):
+            with self.subTest(feedback=feedback_value):
+                recorded = self.record_card(
+                    title=f"{feedback_value} 主题",
+                    slug=f"{feedback_value}-topic",
+                    question=f"{feedback_value} 主题的核心问题是什么？",
+                    summary=f"{feedback_value} 主题有一个可复用的解释。",
+                )
+                accepted = json.loads(
+                    self.run_cli(
+                        "feedback", "--id", recorded["id"], "--value", feedback_value
+                    ).stdout
+                )
+                note_path = self.root / accepted["note"]
+                index_path = self.root / "INDEX.md"
+                note_before_request = note_path.read_bytes()
+                index_before_request = index_path.read_bytes()
+
+                requested = json.loads(
+                    self.run_cli(
+                        "feedback", "--id", recorded["id"], "--value", "deep"
+                    ).stdout
+                )
+                self.assertEqual(feedback_value, requested["feedback"])
+                self.assertTrue(requested["report_requested_at"])
+                self.assertEqual(note_before_request, note_path.read_bytes())
+                self.assertEqual(index_before_request, index_path.read_bytes())
+                pending = json.loads(self.run_cli("context").stdout)["pending_reports"]
+                self.assertEqual([recorded["id"]], [item["id"] for item in pending])
+
+                state_path = self.root / "_system" / "state.json"
+                state_after_request = state_path.read_bytes()
+                repeated_request = self.run_cli(
+                    "feedback", "--id", recorded["id"], "--value", "deep", expect_ok=False
+                )
+                self.assertNotEqual(0, repeated_request.returncode)
+                self.assertIn("already", repeated_request.stderr.lower())
+                self.assertEqual(state_after_request, state_path.read_bytes())
+
+                report_body = self.temp / f"{feedback_value}-report.md"
+                report_body.write_text(
+                    "# 深度报告\n\n" "核心问题已有更充分的证据回答。[来源](https://example.org/a)\n",
+                    encoding="utf-8",
+                )
+                report_sources = self.temp / f"{feedback_value}-report-sources.json"
+                report_sources.write_text(
+                    json.dumps(
+                        [
+                            {
+                                "title": f"Evidence {number}",
+                                "url": f"https://{host}/source",
+                                "kind": kind,
+                                "publisher": publisher,
+                                "supports": f"Independent evidence {number}",
+                            }
+                            for number, (host, kind, publisher) in enumerate(
+                                (
+                                    ("example.org", "primary", "Example Archive"),
+                                    ("example.net", "academic", "Example University"),
+                                    ("example.com", "authoritative", "Example Agency"),
+                                ),
+                                start=1,
+                            )
+                        ]
+                    ),
+                    encoding="utf-8",
+                )
+                attached = json.loads(
+                    self.run_cli(
+                        "deep",
+                        "--id",
+                        recorded["id"],
+                        "--body",
+                        str(report_body),
+                        "--sources",
+                        str(report_sources),
+                    ).stdout
+                )
+                report_path = self.root / attached["report"]
+                note_text = note_path.read_text(encoding="utf-8")
+                report_text = report_path.read_text(encoding="utf-8")
+                self.assertEqual(feedback_value, attached["feedback"])
+                self.assertEqual(recorded["question"], attached["report_question"])
+                self.assertIn("feedback: " + feedback_value, note_text)
+                self.assertIn(
+                    f"[深度研究报告](../Reports/{feedback_value}-topic-deep-research.md)",
+                    note_text,
+                )
+                self.assertIn(
+                    f"[{feedback_value} 主题](../Cards/{feedback_value}-topic.md)",
+                    report_text,
+                )
+                self.assertEqual(index_before_request, index_path.read_bytes())
+                self.assertEqual([], json.loads(self.run_cli("context").stdout)["pending_reports"])
+
+                report_before_repeat = report_path.read_bytes()
+                repeated_attach = self.run_cli(
+                    "deep",
+                    "--id",
+                    recorded["id"],
+                    "--body",
+                    str(report_body),
+                    "--sources",
+                    str(report_sources),
+                    expect_ok=False,
+                )
+                self.assertNotEqual(0, repeated_attach.returncode)
+                self.assertIn("already exists", repeated_attach.stderr)
+                self.assertEqual(report_before_repeat, report_path.read_bytes())
+
     def test_deep_feedback_can_attach_a_linked_deep_research_report(self) -> None:
         body, sources = self.write_card_input()
         recorded = json.loads(
@@ -820,6 +1002,17 @@ class BoundaryCliTestCase(unittest.TestCase):
         self.assertEqual(1, context["region_counts"]["southern-africa"])
 
         self.run_cli("feedback", "--id", recorded["id"], "--value", "skipped")
+        state_path = self.root / "_system" / "state.json"
+        skipped_state = state_path.read_bytes()
+        self.assertFalse((self.root / recorded["draft"]).exists())
+        self.assertFalse((self.root / "Cards" / "great-zimbabwe.md").exists())
+        deep_after_skip = self.run_cli(
+            "feedback", "--id", recorded["id"], "--value", "deep", expect_ok=False
+        )
+        self.assertNotEqual(0, deep_after_skip.returncode)
+        self.assertIn("already finalized", deep_after_skip.stderr)
+        self.assertEqual(skipped_state, state_path.read_bytes())
+
         duplicate = self.run_cli(
             "record",
             "--title",

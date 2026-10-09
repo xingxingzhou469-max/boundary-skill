@@ -13,7 +13,7 @@
 9. State uncertainty and disagreement in plain language.
 10. Record access/publication dates for facts likely to change.
 
-For every retained source, record its original title, URL, source kind, publisher or institution, and the specific claim it supports. `publisher` identifies the independent organization responsible for the source; do not invent different publisher labels for material derived from the same underlying organization.
+For every retained source, record its original title, URL, source kind, publisher or institution, and the specific claim it supports. Apply the [shared standard's source-identity and passage checks](quality-rubric.md) to the actual opened item. `publisher` identifies the independent organization responsible for the source; do not invent different publisher labels for material derived from the same underlying organization.
 
 ## Source hierarchy
 

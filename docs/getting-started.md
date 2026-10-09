@@ -73,6 +73,11 @@ Commands above run from the skill directory. An agent normally performs setup an
 
 Reply **Known / New / Deep dive / Skip** (中文：**已知道 / 新知识 / 深入了解 / 暂时跳过**). Feedback is final for each shown card. If several pending cards could match, the agent should ask which one you mean.
 
+After Known or New, you can still ask "Deep dive: [card title]." The agent records
+the report request with `feedback --id "..." --value deep`, preserves your
+original feedback, and attaches one report to the same card. It does not add
+another index entry. A skipped local card has no saved body for this path.
+
 After an interrupted Deep dive, ask “Continue the unfinished Boundary report.” The agent reads `context.pending_reports` and researches the stored question without repeating feedback. It must not create a placeholder to hide a research failure.
 
 ## ChatGPT Scheduled without local installation

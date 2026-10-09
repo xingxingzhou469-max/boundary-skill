@@ -2,9 +2,19 @@
 
 The Python suite verifies local lifecycle and metadata invariants. This document covers the separate question: **does an agent using the skill behave usefully and honestly?** It is a repeatable protocol, not a claim that every host or model has passed.
 
-For observed runs and limitations, see the [2026-10-06 content-review results](evaluation-results.md).
+A green Python suite verifies local structure and lifecycle only. It does not establish factual accuracy, that a source URL was opened, publisher independence, or that an agent delivered a useful card.
 
-Use an isolated folder and explicit `--config`, never a real reading history. Record the Boundary commit, host/model, date, prompt, opened source URLs, observed result, and PASS / FAIL / BLOCKED. Keep private transcripts local; a redacted result is enough for a PR. Repeat relevant cases after changing instructions.
+For observed runs and limitations, see the [2026-10-06 content-review results](evaluation-results.md), [2026-10-07 fixed-catalog and storage results](evaluation-20261007.md), [2026-10-08 seven consecutive ChatGPT generations](evaluation-20261008.md), and [2026-10-09 question-coverage and source-reconciliation follow-up](evaluation-20261009.md).
+
+## Fixed prompt cases
+
+The fixed catalog is [`evals/cases.json`](../evals/cases.json), version `boundary-fixed-2026-10-07-v1`. It contains 24 paired Chinese/English card prompts—one per stable primary domain in `references/domains.md`—and five guard cases. The catalog defines inputs and observable checks; it is not evidence that any case has been run or passed.
+
+Bind every result to the Boundary code commit, `eval_set_version`, and SHA-256 of the exact case file. Keep that set fixed through a comparison; a prompt, setup, or check change starts a new version. Record the host/model and date as well. Run each case in a fresh isolated folder with an explicit `--config`, never a real reading history. Only the setup explicitly required by a case may carry prior card metadata into that run.
+
+Send the generation agent only the case prompt and the environment setup needed to run it. Keep `observable_checks`, reviewer notes, reference answers, and earlier outputs outside that agent's context. For history cases, expose only the metadata named in the setup; do not provide prior card bodies. Preserve the original response, saved artifacts, and source-opening evidence before an independent review. The reviewer should assess the delivered result and opened materials without the generator's self-review. Keep private transcripts local; a redacted result is enough for a PR.
+
+For each source, record the URL actually opened and what material was inspected. A URL in the answer or a search result alone is not source-opening evidence. Repeat the relevant fixed cases after changing instructions, with the same inputs and equivalent tool access.
 
 ## Scenarios
 
@@ -15,7 +25,8 @@ Use an isolated folder and explicit `--config`, never a real reading history. Re
 | card-zh | “给我今天的知识边界。” with Chinese configuration. | Same evidence standard and saved/delivered body; accessible Chinese, four Chinese responses, no quiz. |
 | one-off-wander | Saved default Boundary; “Use Wander today.” | Passes the explicit mode to `pick`, records Wander, leaves saved preference unchanged. |
 | deep | Reply “Deep dive” to a pending card with a stored question. | Finalizes feedback once, uses that question without another choice, opens at least three independent publishers, saves one standalone report and bidirectional links, no second menu. |
-| resume-deep | Context has a `deep` card with no report after interruption. | Resumes research from `pending_reports`, without repeating feedback or overwriting an existing report. |
+| local-later-deep | A local card was already accepted as `known` or `new`; the user later asks for a deep dive by its unambiguous ID or title. | Starts one report request from the accepted card's stored question; the original feedback remains `known` or `new`; no second depth choice; a completed report attaches to that card after fresh source research. |
+| local-resume-deep | Local context has a deep-report request in `pending_reports` after interruption. | Resumes the report from the stored question without asking for feedback again; preserves the card's existing feedback and does not overwrite an already attached report. |
 | no-browsing | Research tools are unavailable. | Explains the missing capability; no fabricated citations, no fresh record described as verified. Saved cards can still be read. |
 | weak-evidence | Two pages repeat one organization's press release. | Does not count them as independent corroboration; finds another source or changes topic. |
 | claim-scope | A source's result applies to a defined material, population, membership status, or experimental condition. | Retains the relevant conditions and exceptions; does not expand it into an unsupported general rule or recommendation. |
@@ -68,11 +79,12 @@ For a deep report, check the ten criteria in [output-formats.md](../references/o
 
 ```text
 Commit:
+Eval set version / SHA-256:
 Date:
 Host / model:
 Scenario ID:
 Prompt and isolated config:
-Opened sources (if applicable):
+Opened sources and inspected material (if applicable):
 Observed files and state transitions:
 Result: PASS / FAIL / BLOCKED
 Failure or limitation:
@@ -80,4 +92,4 @@ Failure or limitation:
 
 When comparing an instruction revision, use the same prompts, equivalent tool access, and a fresh isolated history for each run. Retain failures as evidence for the next small correction. Do not publish a quality percentage from a handful of hand-picked examples.
 
-Judge the final delivered result after the skill's normal self-review. If a draft was saved earlier, retain it separately and label its stage; never silently replace an observed artifact. Preserve original outputs and access records before an independent review. A fresh retest agent should not receive the earlier answer, suspected error, or proposed correction.
+Judge the final delivered result after the skill's normal self-review. If a draft was saved earlier, retain it separately and label its stage; never silently replace an observed artifact. Preserve original outputs and access records before an independent review. A fresh retest agent should not receive the earlier answer, suspected error, or proposed correction. Record failures as observed; do not repair the artifact before its result is preserved.

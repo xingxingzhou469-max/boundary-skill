@@ -409,6 +409,12 @@ def validate_entry(item: Any, path: Path) -> None:
     missing = sorted(required - item.keys())
     if missing:
         raise SystemExit(f"History entry {item.get('id', '<unknown>')} is missing: {', '.join(missing)}")
+    for field in ("shown_at", "feedback_at", "report_requested_at"):
+        if field in item and not valid_timestamp(item[field]):
+            raise SystemExit(
+                f"Invalid {field} in history entry {item['id']} in {path}: "
+                "expected an ISO 8601 date-time"
+            )
     if item["feedback"] not in FEEDBACK:
         raise SystemExit(f"Invalid feedback in {path}: {item['feedback']}")
     if not isinstance(item["domains"], list) or not item["domains"]:
@@ -449,6 +455,8 @@ def normalized_text(value: str) -> str:
 
 
 def parse_time(value: str) -> datetime | None:
+    if not isinstance(value, str):
+        return None
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except (TypeError, ValueError):
@@ -456,6 +464,10 @@ def parse_time(value: str) -> datetime | None:
     if parsed.tzinfo is None:
         return parsed.replace(tzinfo=timezone.utc)
     return parsed.astimezone(timezone.utc)
+
+
+def valid_timestamp(value: Any) -> bool:
+    return isinstance(value, str) and "T" in value and parse_time(value) is not None
 
 
 def relative_to_root(root: Path, path: Path) -> str:
@@ -722,6 +734,15 @@ def find_entry(state: dict[str, Any], identifier: str) -> dict[str, Any]:
     return match
 
 
+def report_is_pending(entry: dict[str, Any]) -> bool:
+    if entry["report"] is not None:
+        return False
+    return entry["feedback"] == "deep" or (
+        entry["feedback"] in {"known", "new"}
+        and entry.get("report_requested_at") is not None
+    )
+
+
 @lock_state_mutation(root_from_args=True)
 def cmd_init(args: argparse.Namespace) -> None:
     cfg_path = config_path(args)
@@ -793,7 +814,7 @@ def cmd_context(args: argparse.Namespace) -> None:
         "region_counts": dict(sorted(region_counts.items())),
         "active": [item for item in history if item["feedback"] == "shown"],
         "pending_reports": [
-            item for item in history if item["feedback"] == "deep" and item["report"] is None
+            item for item in history if report_is_pending(item)
         ],
         "today": [item for item in history if shown_local_date(item) == today],
         "recent": history[-args.limit :],
@@ -814,8 +835,17 @@ def cmd_record(args: argparse.Namespace) -> None:
     _, config = load_config(args)
     path, state = load_state(config)
     root = Path(config["root"])
-    slug = slugify(args.slug or args.title)
-    topic_key = slugify(args.topic_key or args.question)
+    title = args.title.strip()
+    question = args.question.strip()
+    summary = args.summary.strip()
+    if not title:
+        raise SystemExit("Card title cannot be empty")
+    if not question:
+        raise SystemExit("Card question cannot be empty")
+    if not summary:
+        raise SystemExit("Card summary cannot be empty")
+    slug = slugify(args.slug or title)
+    topic_key = slugify(args.topic_key or question)
     body_path = Path(args.body).expanduser().resolve()
     try:
         body = body_path.read_text(encoding="utf-8").strip()
@@ -823,11 +853,11 @@ def cmd_record(args: argparse.Namespace) -> None:
         raise SystemExit(f"Missing card body file: {body_path}") from exc
     if not body:
         raise SystemExit("Card body cannot be empty")
-    if "\n" in args.summary:
+    if "\n" in summary:
         raise SystemExit("Card summary must be one line")
     sources = read_sources(Path(args.sources).expanduser().resolve(), minimum=2)
     duplicate = topic_is_duplicate(
-        state["history"], slug, topic_key, args.question, args.summary
+        state["history"], slug, topic_key, question, summary
     )
     if duplicate:
         item, cooling_down = duplicate
@@ -842,10 +872,10 @@ def cmd_record(args: argparse.Namespace) -> None:
         raise SystemExit(f"Boundary pending card must stay under _system/pending/: {draft_path}")
     entry = {
         "id": identifier,
-        "title": args.title.strip(),
+        "title": title,
         "slug": slug,
-        "question": args.question.strip(),
-        "summary": args.summary.strip(),
+        "question": question,
+        "summary": summary,
         "topic_key": topic_key,
         "domains": list(dict.fromkeys(args.domain)),
         "regions": list(dict.fromkeys(slugify(region) for region in args.region)),
@@ -903,6 +933,18 @@ def cmd_feedback(args: argparse.Namespace) -> None:
     path, state = load_state(config)
     root = Path(config["root"])
     entry = find_entry(state, args.id)
+    if args.value == "deep" and entry["feedback"] in {"known", "new"}:
+        if entry["report"] is not None or entry.get("report_requested_at") is not None:
+            raise SystemExit(f"A deep research report was already requested for {entry['id']}")
+        if not entry["note"]:
+            raise SystemExit("The originating card note is missing from state")
+        note_path = stored_artifact_path(root, entry["note"], "Cards/")
+        if not note_path.is_file():
+            raise SystemExit(f"Originating card note is missing: {note_path}")
+        entry["report_requested_at"] = now_iso()
+        atomic_write_batch({path: json.dumps(state, ensure_ascii=False, indent=2) + "\n"})
+        print(json.dumps(entry, ensure_ascii=False, indent=2))
+        return
     if entry["feedback"] != "shown":
         raise SystemExit(f"Feedback is already finalized for {entry['id']}: {entry['feedback']}")
     draft_path = stored_artifact_path(root, entry["draft"], "_system/pending/")
@@ -960,12 +1002,12 @@ def cmd_deep(args: argparse.Namespace) -> None:
     path, state = load_state(config)
     root = Path(config["root"])
     entry = find_entry(state, args.id)
-    if entry["feedback"] != "deep":
-        raise SystemExit("A deep research report requires finalized deep feedback")
-    if not entry["note"]:
-        raise SystemExit("The originating card note is missing from state")
     if entry["report"]:
         raise SystemExit(f"Deep research report already exists: {entry['report']}")
+    if not report_is_pending(entry):
+        raise SystemExit("A deep research report requires a pending deep research request")
+    if not entry["note"]:
+        raise SystemExit("The originating card note is missing from state")
 
     input_path = Path(args.body).expanduser().resolve()
     try:
@@ -1063,14 +1105,14 @@ def parser() -> argparse.ArgumentParser:
     record.add_argument("--sources", required=True, help="JSON file containing structured sources")
     record.set_defaults(func=cmd_record)
 
-    feedback = commands.add_parser("feedback", help="Finalize one shown card")
+    feedback = commands.add_parser("feedback", help="Finalize a shown card or request a report for Known/New")
     feedback.add_argument("--id", required=True)
     feedback.add_argument("--value", choices=("known", "new", "deep", "skipped"), required=True)
     feedback.set_defaults(func=cmd_feedback)
 
     deep = commands.add_parser(
         "deep",
-        help="Attach a verified deep research report to a deep card",
+        help="Attach a verified report to a pending deep research request",
     )
     deep.add_argument("--id", required=True)
     deep.add_argument("--question")

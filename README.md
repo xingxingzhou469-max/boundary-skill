@@ -104,7 +104,7 @@ The twelve domains span Earth and space, life and medicine, mathematics and phys
 | **Deep dive / 深入了解** | Save the card, research its question further, and attach one complete report. |
 | **Skip / 暂时跳过** | Remove the pending body; keep metadata for a seven-day topic cooldown. No formal note. |
 
-A shown card is saved before delivery, so you can resume after closing the chat. Deep dive uses the question already on the card; no second depth menu. Feedback is final for that card. Shown cards contribute to coverage; a skip slightly reduces a domain's short-term weight and never blocks it permanently.
+A shown card is saved before delivery, so you can resume after closing the chat. Deep dive uses the question already on the card; no second depth menu. You can request a report later after Known or New: the original feedback stays final, and the report links to the same saved card. Interrupted requests remain available after restarting. A skipped local card has no saved body to attach a report to. Shown cards contribute to coverage; a skip slightly reduces a domain's short-term weight and never blocks it permanently.
 
 ## Evidence you can inspect
 
